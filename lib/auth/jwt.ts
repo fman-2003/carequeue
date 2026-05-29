@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET!;
@@ -17,7 +18,7 @@ interface TokenPayload {
 // Sign to create new token with payload details
 export function signToken(payload: TokenPayload): string {
   return jwt.sign(payload, JWT_SECRET as jwt.Secret, {
-    expiresIn: JWT_EXPIRES_IN,
+    expiresIn: JWT_EXPIRES_IN as any,
   });
 }
 
