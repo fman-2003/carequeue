@@ -14,7 +14,7 @@ export default function SignupPage() {
     password: "",
     confirm: "",
     phone: "",
-    role: "patient" as "patient" | "doctor" | "receptionist" | "admin",
+    role: "patient" as "patient" | "doctor" | "admin",
   });
 
   const [error, setError] = useState("");
@@ -143,7 +143,7 @@ export default function SignupPage() {
             >
               <option value="patient">Patient</option>
               <option value="doctor">Doctor</option>
-              <option value="receptionist">Receptionist</option>
+              {/* <option value="receptionist">Receptionist</option> */}
               <option value="admin">Clinic Admin</option>
             </select>
             <p className="text-xs text-gray-400 mt-1">
@@ -151,8 +151,8 @@ export default function SignupPage() {
                 "Book appointments and manage your health visits."}
               {form.role === "doctor" &&
                 "Manage your schedule and patient appointments."}
-              {form.role === "receptionist" &&
-                "Book and manage appointments on behalf of doctors and patients."}
+              {/* {form.role === "receptionist" &&
+                "Book and manage appointments on behalf of doctors and patients."} */}
               {form.role === "admin" &&
                 "Create and manage your clinic. You will set up your clinic after signing up."}
             </p>

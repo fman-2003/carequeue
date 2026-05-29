@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken } from "@/lib/auth/getSession";
+import ClinicGuard from "@/components/ClinicGuard";
 
 function getFromToken(field: string): string {
   const token = getToken();
@@ -183,7 +184,7 @@ export default function NewAppointmentPage() {
           {error}
         </div>
       )}
-
+      <ClinicGuard hasClinic={!!clinicId} role={role}>
       <form
         onSubmit={handleSubmit}
         className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4"
@@ -327,7 +328,8 @@ export default function NewAppointmentPage() {
         >
           {loading ? "Booking..." : "Book Appointment"}
         </button>
-      </form>
+        </form>
+      </ClinicGuard>
     </div>
   );
 }

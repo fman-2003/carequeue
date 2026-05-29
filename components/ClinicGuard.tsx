@@ -18,7 +18,7 @@ export default function ClinicGuard({
     const message =
       role === "admin"
         ? "You need to create a clinic before accessing this page."
-        : "You need to set your clinic in settings before accessing this page.";
+        : "You need to select a clinic in settings before accessing this page.";
     const label = role === "admin" ? "Create Clinic →" : "Go to Settings →";
 
     return (

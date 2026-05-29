@@ -82,19 +82,6 @@ function AdminOverview() {
         <h2 className="text-xl font-bold text-gray-800 mb-6">
           Clinic Overview
         </h2>
-        {/* <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {cards.map((card) => (
-            <div
-              key={card.label}
-              className="bg-white rounded-lg shadow-sm border border-gray-200 p-5"
-            >
-              <p className="text-sm text-gray-500">{card.label}</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
-                {card.value ?? 0}
-              </p>
-            </div>
-          ))}
-        </div> */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           {[
             { label: "Total", value: data.totalCount },
@@ -154,11 +141,6 @@ function DoctorOverview() {
 
   if (loading) return <p className="text-gray-500">Loading...</p>;
 
-  // const today = new Date().toDateString();
-  // const todayAppointments = appointments.filter(
-  //   (a) => new Date(a.date).toDateString() === today,
-  // );
-
   if (analyticsLoading) return <p className="text-gray-500">Loading...</p>;
   if (error) return <p className="text-red-500">{error}</p>;
   if (!data) return null;
@@ -172,28 +154,6 @@ function DoctorOverview() {
     <ClinicGuard hasClinic={!!clinicId} role={role}>
       <div>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
-
-        {/* <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-white rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-500">Today&apos;s Appointments</p>
-            <p className="text-3xl font-bold text-gray-800 mt-1">
-              {todayAppointments.length}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-500">Total Appointments</p>
-            <p className="text-3xl font-bold text-gray-800 mt-1">
-              {appointments.length}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg border border-gray-200 p-5">
-            <p className="text-sm text-gray-500">Pending Confirmation</p>
-            <p className="text-3xl font-bold text-gray-800 mt-1">
-              {appointments.filter((a) => a.status === "pending").length}
-            </p>
-          </div>
-        </div> */}
-
         <div className="grid grid-cols-3 gap-4 mb-6">
           <div className="bg-white rounded-lg border border-gray-200 p-5">
             <p className="text-sm text-gray-500">Today&apos;s Appointments</p>
@@ -264,6 +224,8 @@ function DoctorOverview() {
 }
 
 function PatientOverview() {
+  const role = getRoleFromToken();
+  const clinicId = getClinicIdFromToken();
   const [appointments, setAppointments] = useState<any[]>([]);
   const [preferredDoctor, setPreferredDoctor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -308,93 +270,97 @@ function PatientOverview() {
   // if (!data) return null;
 
   return (
-    <div>
-      <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
+    <ClinicGuard hasClinic={!!clinicId} role={role}>
+      <div>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-        {/* Doctor Card */}
-        <div className="bg-white border border-gray-200 rounded-lg p-5">
-          <p className="text-sm font-medium text-gray-500 mb-3">My Doctor</p>
-          {preferredDoctor ? (
-            <div>
-              <p className="text-base font-bold text-gray-800">
-                {preferredDoctor.name}
-              </p>
-              <p className="text-sm text-gray-500 mt-1">
-                {preferredDoctor.email}
-              </p>
-              {preferredDoctor.phone && (
-                <p className="text-sm text-gray-500">{preferredDoctor.phone}</p>
-              )}
-            </div>
-          ) : (
-            <div>
-              <p className="text-sm text-gray-400 mb-3">
-                No preferred doctor selected yet.
-              </p>
-              <Link
-                href="/dashboard/settings"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Select a preferred doctor →
-              </Link>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white border border-gray-200 rounded-lg p-5 md:col-span-2">
-          <p className="text-sm font-medium text-gray-500 mb-3">
-            Upcoming Appointments
-          </p>
-          {upcoming.length === 0 ? (
-            <div>
-              <p className="text-sm text-gray-400 mb-3">
-                No upcoming appointments.
-              </p>
-              <Link
-                href="/dashboard/appointments/new"
-                className="text-sm text-blue-600 hover:underline"
-              >
-                Book an appointment →
-              </Link>
-            </div>
-          ) : (
-            <div className="flex flex-col gap-2">
-              {upcoming.map((appt) => (
-                <div
-                  key={appt._id}
-                  className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          {/* Doctor Card */}
+          <div className="bg-white border border-gray-200 rounded-lg p-5">
+            <p className="text-sm font-medium text-gray-500 mb-3">My Doctor</p>
+            {preferredDoctor ? (
+              <div>
+                <p className="text-base font-bold text-gray-800">
+                  {preferredDoctor.name}
+                </p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {preferredDoctor.email}
+                </p>
+                {preferredDoctor.phone && (
+                  <p className="text-sm text-gray-500">
+                    {preferredDoctor.phone}
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <p className="text-sm text-gray-400 mb-3">
+                  No preferred doctor selected yet.
+                </p>
+                <Link
+                  href="/dashboard/settings"
+                  className="text-sm text-blue-600 hover:underline"
                 >
-                  <div>
-                    <p className="text-sm font-medium text-gray-800">
-                      Dr. {appt.doctorId?.name || "—"}
-                    </p>
-                    <p className="text-xs text-gray-500">
-                      {new Date(appt.date).toDateString()} · {appt.timeSlot}
-                    </p>
-                  </div>
-                  <span
-                    className={`text-xs px-2 py-1 rounded-full font-medium ${
-                      appt.status === "confirmed"
-                        ? "bg-green-100 text-green-700"
-                        : "bg-yellow-100 text-yellow-700"
-                    }`}
+                  Select a preferred doctor →
+                </Link>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white border border-gray-200 rounded-lg p-5 md:col-span-2">
+            <p className="text-sm font-medium text-gray-500 mb-3">
+              Upcoming Appointments
+            </p>
+            {upcoming.length === 0 ? (
+              <div>
+                <p className="text-sm text-gray-400 mb-3">
+                  No upcoming appointments.
+                </p>
+                <Link
+                  href="/dashboard/appointments/new"
+                  className="text-sm text-blue-600 hover:underline"
+                >
+                  Book an appointment →
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {upcoming.map((appt) => (
+                  <div
+                    key={appt._id}
+                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
                   >
-                    {appt.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          )}
+                    <div>
+                      <p className="text-sm font-medium text-gray-800">
+                        Dr. {appt.doctorId?.name || "—"}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(appt.date).toDateString()} · {appt.timeSlot}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full font-medium ${
+                        appt.status === "confirmed"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      }`}
+                    >
+                      {appt.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+        {data && (
+          <VolumeLineChart
+            data={data.volumeOverTime}
+            title="My Appointment Activity — Last 14 Days"
+          />
+        )}
       </div>
-      {data && (
-        <VolumeLineChart
-          data={data.volumeOverTime}
-          title="My Appointment Activity — Last 14 Days"
-        />
-      )}
-    </div>
+    </ClinicGuard>
   );
 }
 
