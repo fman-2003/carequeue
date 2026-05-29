@@ -221,11 +221,6 @@ export default function NewAppointmentPage() {
             </label>
 
             {role === "patient" && preferredDoctorId ? (
-              /**
-               * Patient has a preferred doctor — show locked field.
-               * Input is disabled and pre-filled.
-               * They must go to Settings to change it.
-               */
               <div className="relative">
                 <input
                   type="text"

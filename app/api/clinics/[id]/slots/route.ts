@@ -5,7 +5,7 @@ import { getClinic } from "@/lib/services/clinic.service";
 import { getAvailableSlots } from "@/lib/utils/generateSlots";
 import { isWorkingDay } from "@/lib/utils/helper";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { error } = authenticate(req);

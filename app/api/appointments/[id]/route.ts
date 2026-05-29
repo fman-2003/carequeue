@@ -8,7 +8,7 @@ import {
   // deleteAppointment,
 } from "@/lib/services/appointment.service";
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> }
 
 export async function GET(req: NextRequest, { params }: Params) {
   const { error } = authenticate(req);
@@ -66,21 +66,3 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: err.message }, { status: 400 });
   }
 }
-
-// export async function DELETE(req: NextRequest, { params }: Params) {
-//   const { payload, error } = authenticate(req);
-//   if (error) return error;
-
-//     const {id} = await params
-
-//   // only admins can delete
-//   const roleError = requireRole(payload!.role, ["admin"]);
-//   if (roleError) return roleError;
-
-//   try {
-//     const result = await deleteAppointment(id, payload!.clinicId!);
-//     return NextResponse.json(result);
-//   } catch (err: any) {
-//     return NextResponse.json({ error: err.message }, { status: 404 });
-//   }
-// }
