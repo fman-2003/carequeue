@@ -21,7 +21,7 @@ export async function PATCH(req: NextRequest) {
     const parsed = preferredDoctorSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.flatten().fieldErrors },
+        { error: parsed.error.issues.map((issue) => issue.message).join(", ") },
         { status: 400 },
       );
     }

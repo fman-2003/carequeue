@@ -30,13 +30,29 @@ export default function SettingsPage() {
   const [clinicError, setClinicError] = useState("");
   const [showClinicModal, setShowClinicModal] = useState(false);
 
-  // preferred doctor state (patients only though)
+  // preferred doctor state (patients only)
   const [preferredDoctor, setPreferredDoctor] = useState("");
   const [doctorSaving, setDoctorSaving] = useState(false);
   const [doctorMessage, setDoctorMessage] = useState("");
   const [doctorError, setDoctorError] = useState("");
   const [showDoctorModal, setShowDoctorModal] = useState(false);
   const [pendingDoctorValue, setPendingDoctorValue] = useState("");
+
+  // password change settings
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
+  const [passwordSaving, setPasswordSaving] = useState(false);
+  const [passwordMessage, setPasswordMessage] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [showPasswords, setShowPasswords] = useState({
+    current: false,
+    new: false,
+    confirm: false,
+  });
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     async function fetchData() {
@@ -166,6 +182,81 @@ export default function SettingsPage() {
       setDoctorSaving(false);
     }
   }
+
+  async function confirmPasswordChange() {
+    setShowPasswordModal(false);
+    setPasswordSaving(true);
+    setPasswordMessage("");
+    setPasswordError("");
+
+    try {
+      const res = await fetch("/api/users/change-password", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${getToken()}`,
+        },
+        body: JSON.stringify(passwordForm),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        /**
+         * Error can be a field error object or a plain string.
+         * Handle both cases cleanly.
+         */
+        if (typeof data.error === "object") {
+          const messages = Object.values(data.error).flat().join(". ");
+          setPasswordError(messages);
+        } else {
+          setPasswordError(data.error || "Failed to update password");
+        }
+        return;
+      }
+
+      setPasswordMessage("Password updated successfully ✅");
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+    } catch {
+      setPasswordError("Something went wrong");
+    } finally {
+      setPasswordSaving(false);
+    }
+  }
+
+  // password strength indicator helper
+  function getPasswordStrength(password: string): {
+    label: string;
+    color: string;
+    width: string;
+  } {
+    if (!password) return { label: "", color: "", width: "0%" };
+
+    const hasUppercase = /[A-Z]/.test(password);
+    const hasLowercase = /[a-z]/.test(password);
+    const hasNumber = /[0-9]/.test(password);
+    const hasSpecial = /[^A-Za-z0-9]/.test(password);
+    const isLong = password.length >= 8;
+
+    const score = [
+      hasUppercase,
+      hasLowercase,
+      hasNumber,
+      hasSpecial,
+      isLong,
+    ].filter(Boolean).length;
+
+    if (score <= 2) return { label: "Weak", color: "bg-red-500", width: "33%" };
+    if (score <= 3)
+      return { label: "Fair", color: "bg-yellow-500", width: "66%" };
+    return { label: "Strong", color: "bg-green-500", width: "100%" };
+  }
+
+  const strength = getPasswordStrength(passwordForm.newPassword);
 
   if (loading) return <p className="text-gray-500">Loading settings...</p>;
 
@@ -298,6 +389,193 @@ export default function SettingsPage() {
             </>
           )}
         </div>
+      )}
+
+      {/* ── PASSWORD CHANGE SECTION ─────────────── */}
+      <div className="bg-white border border-gray-200 rounded-lg p-6">
+        <h3 className="text-base font-semibold text-gray-700 mb-1">
+          Change Password
+        </h3>
+        <p className="text-xs text-gray-400 mb-4">
+          You must enter your current password to set a new one.
+        </p>
+
+        {passwordMessage && (
+          <p className="text-green-600 text-sm mb-3">{passwordMessage}</p>
+        )}
+        {passwordError && (
+          <p className="text-red-500 text-sm mb-3">{passwordError}</p>
+        )}
+
+        <div className="flex flex-col gap-4">
+          {/* Current password */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Current Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPasswords.current ? "text" : "password"}
+                value={passwordForm.currentPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    currentPassword: e.target.value,
+                  })
+                }
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter current password"
+              />
+              {/*Toggle password visibility button */}
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPasswords((p) => ({ ...p, current: !p.current }))
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+              >
+                {showPasswords.current ? "Hide" : "Show"}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPasswords.new ? "text" : "password"}
+                value={passwordForm.newPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    newPassword: e.target.value,
+                  })
+                }
+                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Minimum 6 characters"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswords((p) => ({ ...p, new: !p.new }))}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+              >
+                {showPasswords.new ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            {/* Password strength bar */}
+            {passwordForm.newPassword && (
+              <div className="mt-2">
+                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
+                    style={{ width: strength.width }}
+                  />
+                </div>
+                <p
+                  className={`text-xs mt-1 ${
+                    strength.label === "Strong"
+                      ? "text-green-600"
+                      : strength.label === "Fair"
+                        ? "text-yellow-600"
+                        : "text-red-500"
+                  }`}
+                >
+                  {strength.label}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Confirm New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showPasswords.confirm ? "text" : "password"}
+                value={passwordForm.confirmPassword}
+                onChange={(e) =>
+                  setPasswordForm({
+                    ...passwordForm,
+                    confirmPassword: e.target.value,
+                  })
+                }
+                className={`w-full border rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  passwordForm.confirmPassword &&
+                  passwordForm.newPassword !== passwordForm.confirmPassword
+                    ? "border-red-300"
+                    : "border-gray-300"
+                }`}
+                placeholder="Repeat new password"
+              />
+              <button
+                type="button"
+                onClick={() =>
+                  setShowPasswords((p) => ({ ...p, confirm: !p.confirm }))
+                }
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+              >
+                {showPasswords.confirm ? "Hide" : "Show"}
+              </button>
+            </div>
+
+            {/* Live match indicator */}
+            {passwordForm.confirmPassword && (
+              <p
+                className={`text-xs mt-1 ${
+                  passwordForm.newPassword === passwordForm.confirmPassword
+                    ? "text-green-600"
+                    : "text-red-500"
+                }`}
+              >
+                {passwordForm.newPassword === passwordForm.confirmPassword
+                  ? "✓ Passwords match"
+                  : "✗ Passwords do not match"}
+              </p>
+            )}
+          </div>
+
+          <button
+            onClick={() => {
+              if (
+                !passwordForm.currentPassword ||
+                !passwordForm.newPassword ||
+                !passwordForm.confirmPassword
+              ) {
+                setPasswordError("Please fill in all password fields");
+                return;
+              }
+              if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                setPasswordError("New passwords do not match");
+                return;
+              }
+              if (passwordForm.newPassword.length < 6) {
+                setPasswordError("New password must be at least 6 characters");
+                return;
+              }
+              setPasswordError("");
+              setShowPasswordModal(true);
+            }}
+            disabled={passwordSaving}
+            className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+          >
+            {passwordSaving ? "Updating..." : "Update Password"}
+          </button>
+        </div>
+      </div>
+
+      {/* Password change confirm modal */}
+      {showPasswordModal && (
+        <ConfirmModal
+          title="Change Password"
+          message="Are you sure you want to update your password? You will need to use your new password next time you log in."
+          confirmText="Yes, Update Password"
+          onConfirm={confirmPasswordChange}
+          onCancel={() => setShowPasswordModal(false)}
+        />
       )}
 
       {showClinicModal && (

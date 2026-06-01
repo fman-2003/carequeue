@@ -8,7 +8,7 @@ export interface IMedicalDocument extends Document {
   fileName: string;
   fileType: "lab_result" | "scan" | "referral" | "prescription" | "other";
   fileUrl: string;
-  fileSize: number; // in bytes
+  fileSize: number;
   mimeType: string;
   description?: string;
   createdAt: Date;

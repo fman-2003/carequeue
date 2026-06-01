@@ -44,6 +44,8 @@ export default function NewAppointmentPage() {
 
   if (role === "patient" && !clinicId) {
     return (
+      <>
+      <h2 className="text-xl font-bold text-gray-800 mb-6">Book Appointment</h2>
       <div className="flex flex-col items-center justify-center h-64 gap-4">
         <p className="text-gray-500 text-sm text-center max-w-sm">
           You need to set a clinic in settings before booking an appointment.
@@ -55,6 +57,7 @@ export default function NewAppointmentPage() {
           Go to Settings →
         </Link>
       </div>
+      </>
     );
   }
 

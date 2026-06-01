@@ -51,6 +51,10 @@ function AdminOverview() {
         const appointments = data.appointments || [];
         setStats({
           total: appointments.length,
+          today: appointments.filter(
+            (a: { date: string | number | Date; }) =>
+              new Date(a.date).toDateString() === new Date().toDateString(),
+          ).length,
           confirmed: appointments.filter((a: any) => a.status === "confirmed")
             .length,
           pending: appointments.filter((a: any) => a.status === "pending")
@@ -62,7 +66,15 @@ function AdminOverview() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading)
+    return (
+      <>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">
+          Clinic Overview
+        </h2>
+        <p className="text-gray-500">Loading...</p>
+      </>
+    );
 
   // const cards = [
   //   { label: "Total Appointments", value: stats?.total },
@@ -89,7 +101,7 @@ function AdminOverview() {
         <p className="text-red-500">{error}</p>
       </>
     );
-  if (!data) return null;
+  // if (!data) return null;
 
   return (
     <>
@@ -98,14 +110,12 @@ function AdminOverview() {
         <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             {[
-              { label: "Total", value: data.totalCount },
-              { label: "Today", value: data.todayCount },
-              { label: "Pending", value: data.pendingCount },
+              { label: "Total", value: stats.total },
+              { label: "Today", value: stats.today },
+              { label: "Pending", value: stats.pending },
               {
                 label: "No Shows",
-                value:
-                  data.statusBreakdown.find((s) => s.name === "No Show")
-                    ?.value ?? 0,
+                value: stats.noShow,
               },
             ].map((card) => (
               <div
@@ -120,18 +130,27 @@ function AdminOverview() {
             ))}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <VolumeLineChart
-              data={data.volumeOverTime}
-              title="Appointments — Last 14 Days"
-            />
-            <StatusDonutChart data={data.statusBreakdown} />
-          </div>
+          {data ? (
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <VolumeLineChart
+                  data={data.volumeOverTime}
+                  title="Appointments — Last 14 Days"
+                />
+                <StatusDonutChart data={data.statusBreakdown} />
+              </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <NoShowBarChart data={data.noShowByDoctor} />
-            <PeakHoursHeatmap data={data.peakHours} />
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <NoShowBarChart data={data.noShowByDoctor} />
+                <PeakHoursHeatmap data={data.peakHours} />
+              </div>
+            </>
+          ) : (
+            <h3 className="text-center text-gray-500">
+              No analytics currently available. Select a clinic to access
+              analytics.
+            </h3>
+          )}
         </div>
       </ClinicGuard>
     </>
@@ -154,7 +173,13 @@ function DoctorOverview() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading)
+    return (
+      <>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
+        <p className="text-gray-500">Loading...</p>
+      </>
+    );
 
   if (analyticsLoading)
     return (
@@ -170,12 +195,89 @@ function DoctorOverview() {
         <p className="text-red-500">{error}</p>
       </>
     );
-  if (!data) return null;
 
   const today = new Date().toDateString();
-  const todayAppointments = data.appointments.filter(
+  const todayAppointments = appointments.filter(
     (a) => new Date(a.date).toDateString() === today,
   );
+
+  if (!data) {
+    return (
+      <>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
+
+        <div>
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <p className="text-sm text-gray-500">Today&apos;s Appointments</p>
+              <p className="text-3xl font-bold text-gray-800 mt-1">
+                {todayAppointments.length}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <p className="text-sm text-gray-500">Total Appointments</p>
+              <p className="text-3xl font-bold text-gray-800 mt-1">
+                {appointments.length}
+              </p>
+            </div>
+            <div className="bg-white rounded-lg border border-gray-200 p-5">
+              <p className="text-sm text-gray-500">Pending Confirmation</p>
+              <p className="text-3xl font-bold text-gray-800 mt-1">
+                {appointments.filter((a) => a.status === "pending").length}
+              </p>
+            </div>
+          </div>
+
+          <h3 className="text-center text-gray-500">
+            No analytics currently available. Select a clinic to access
+            analytics.
+          </h3>
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <MonthlyTrendChart data={data.monthlyTrend} />
+            <RiskDistributionChart data={data.riskDistribution} />
+          </div> */}
+
+          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <StatusDonutChart data={data.statusBreakdown} />
+
+            <div className="bg-white border border-gray-200 rounded-lg p-5">
+              <p className="text-sm font-semibold text-gray-700 mb-3">
+                Today&apos;s Schedule
+                </p>
+                {todayAppointments.length === 0 ? (
+                  <p className="text-sm text-gray-400">No appointments today.</p>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                    {todayAppointments.map((appt) => (
+                      <div
+                      key={appt._id}
+                      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
+                      >
+                      <div>
+                      <p className="text-sm font-medium text-gray-800">
+                      {appt.patientId?.name || "—"}
+                      </p>
+                      <p className="text-xs text-gray-500">{appt.timeSlot}</p>
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full font-medium ${
+                          appt.status === "confirmed"
+                            ? "bg-green-100 text-green-700"
+                            : "bg-yellow-100 text-yellow-700"
+                        }`}
+                      >
+                        {appt.status}
+                      </span>
+                    </div>
+                  ))}
+                  </div>
+                  )}
+                  </div>
+          </div> */}
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -287,7 +389,13 @@ function PatientOverview() {
     fetchData();
   }, []);
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading)
+    return (
+      <>
+        <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
+        <p className="text-gray-500">Loading...</p>
+      </>
+    );
 
   const upcoming = appointments
     .filter((a) => new Date(a.date) >= new Date() && a.status !== "cancelled")
@@ -415,5 +523,5 @@ export default function DashboardPage() {
   if (role === "doctor") return <DoctorOverview />;
   if (role === "patient") return <PatientOverview />;
 
-  return <p className="text-gray-500">Loading...</p>;
+  // return <p className="text-gray-500">Loading...</p>;
 }

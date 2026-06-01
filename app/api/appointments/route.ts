@@ -6,20 +6,46 @@ import {
   getAppointments,
   createAppointment,
 } from "@/lib/services/appointment.service";
+import VisitRecord from "@/lib/models/VisitRecord";
 
 export async function GET(req: NextRequest) {
-  // check if user logged in
   const { payload, error } = authenticate(req);
   if (error) return error;
 
   // console.log("payload:", payload);
-  // get clinicId from token payload that was set during login
   const { role, clinicId, userId } = payload;
   if (!clinicId)
     return NextResponse.json({ error: "Clinic not found" }, { status: 400 });
 
   try {
     const appointments = await getAppointments(clinicId, userId, role);
+
+    if (payload!.role === "doctor") {
+      const appointmentIds = appointments.map((a: any) => a._id);
+
+      const visitRecords = await VisitRecord.find({
+        appointmentId: { $in: appointmentIds },
+        doctorId: payload!.userId,
+      })
+        .select("appointmentId")
+        .lean();
+
+      const visitRecordSet = new Set(
+        visitRecords.map((v) => v.appointmentId.toString()),
+      );
+
+      /**
+       * Attach hasVisitRecord to each appointment.
+       * This tells the frontend which button to show —
+       * "Add Notes" or "View Notes"
+       */
+      const enriched = appointments.map((a: any) => ({
+        ...a,
+        hasVisitRecord: visitRecordSet.has(a._id.toString()),
+      }));
+
+      return NextResponse.json({ appointments: enriched });
+    }
     return NextResponse.json({ appointments });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

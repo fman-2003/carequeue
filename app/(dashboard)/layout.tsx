@@ -76,8 +76,9 @@ export default function DashboardLayout({
       { href: "/dashboard", label: "Overview" },
       { href: "/dashboard/appointments", label: "Appointments" },
       { href: "/dashboard/appointments/new", label: "Book Slot" },
-      { href: "/dashboard/health", label: "Health Profile" },
       { href: "/dashboard/waitlist", label: "Waitlist" },
+      { href: "/dashboard/health", label: "Health Profile" },
+      { href: "/dashboard/my-records", label: "My Records" },
       { href: "/dashboard/settings", label: "Settings" },
     ],
     receptionist: [

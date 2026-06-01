@@ -10,7 +10,6 @@ export interface IAppointment extends Document {
   status: "pending" | "confirmed" | "cancelled" | "completed" | "no-show";
   noShowRisk?: number;
   reminderSent: boolean;
-  hasVisitRecord?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,7 +29,6 @@ const AppointmentSchema = new Schema<IAppointment>(
     },
     noShowRisk: { type: Number, min: 0, max: 1 },
     reminderSent: { type: Boolean, default: false },
-    hasVisitRecord: { type: Boolean, default: false },
   },  
   { timestamps: true },
 );

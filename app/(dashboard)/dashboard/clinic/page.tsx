@@ -77,11 +77,6 @@ export default function CreateClinicPage() {
   });
 
   useEffect(() => {
-    /**
-     * Check if admin already has a clinic.
-     * Admins are limited to one clinic.
-     * If they have one, show it instead of the create form.
-     */
     fetch("/api/clinics/mine", {
       headers: { Authorization: `Bearer ${getToken()}` },
     })
@@ -91,6 +86,21 @@ export default function CreateClinicPage() {
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (!existingClinic) {
+      fetch("/api/users/me", {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        })
+          .then((r) => r.json())
+          .then((userData) => {
+            console.log("this is the userdata to save email", userData)
+            setForm((prev) => ({
+              ...prev, email: userData.user.email
+            }));
+          });
+    }
+  }, [existingClinic]);
 
   function toggleWorkingDay(day: number) {
     setForm((f) => ({
@@ -278,9 +288,8 @@ export default function CreateClinicPage() {
             <input
               type="email"
               value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              disabled
               className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm"
-              placeholder="clinic@email.com"
               required
             />
           </div>

@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { getToken } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import ConfirmModal from "@/components/ConfirmModal";
+import Pagination from "@/components/ui/Pagination";
+import SearchInput from "@/components/ui/SearchInput";
+
+const ITEMS_PER_PAGE = 15;
 
 function getRoleFromToken(): string {
   const token = getToken();
@@ -34,9 +38,6 @@ const STATUS_STYLES: Record<string, string> = {
   completed: "bg-blue-100 text-blue-700",
   "no-show": "bg-red-100 text-red-600",
 };
-
-// status change warning messages that
-// inform doctor that particular changes affect the waitlist
 
 const STATUS_WARNINGS: Record<string, string> = {
   cancelled:
@@ -72,58 +73,32 @@ function AppointmentDetailModal({
 
         <div className="flex flex-col gap-3 text-sm">
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide">
-                Patient
-              </p>
-              <p className="font-medium text-gray-800 mt-0.5">
-                {appointment.patientId?.name || "—"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide">
-                Doctor
-              </p>
-              <p className="font-medium text-gray-800 mt-0.5">
-                {appointment.doctorId?.name || "—"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide">
-                Date
-              </p>
-              <p className="font-medium text-gray-800 mt-0.5">
-                {new Date(appointment.date).toDateString()}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide">
-                Time Slot
-              </p>
-              <p className="font-medium text-gray-800 mt-0.5">
-                {appointment.timeSlot}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide">
-                Status
-              </p>
-              <span
-                className={`inline-block px-2 py-0.5 rounded-full text-xs font-medium mt-0.5 ${STATUS_STYLES[appointment.status] || ""}`}
-              >
-                {appointment.status}
-              </span>
-            </div>
-            <div>
-              <p className="text-xs text-gray-400 uppercase tracking-wide">
-                No-Show Risk
-              </p>
-              <p className="font-medium text-gray-800 mt-0.5">
-                {appointment.noShowRisk != null
-                  ? `${Math.round(appointment.noShowRisk * 100)}%`
-                  : "—"}
-              </p>
-            </div>
+            {[
+              { label: "Patient", value: appointment.patientId?.name },
+              { label: "Doctor", value: appointment.doctorId?.name },
+              {
+                label: "Date",
+                value: new Date(appointment.date).toDateString(),
+              },
+              { label: "Time Slot", value: appointment.timeSlot },
+              { label: "Status", value: appointment.status },
+              {
+                label: "Risk",
+                value:
+                  appointment.noShowRisk != null
+                    ? `${Math.round(appointment.noShowRisk * 100)}%`
+                    : "—",
+              },
+            ].map(({ label, value }) => (
+              <div key={label}>
+                <p className="text-xs text-gray-400 uppercase tracking-wide">
+                  {label}
+                </p>
+                <p className="font-medium text-gray-800 mt-0.5">
+                  {value || "—"}
+                </p>
+              </div>
+            ))}
           </div>
 
           {appointment.reason && (
@@ -159,13 +134,23 @@ export default function AppointmentsPage() {
   const [loading, setLoading] = useState(true);
   const [statusLoading, setStatusLoading] = useState(false);
   const [error, setError] = useState("");
+
   // detail modal
   const [selectedAppt, setSelectedAppt] = useState<any>(null);
+
   // confirm modal for status change
   const [pendingChange, setPendingChange] = useState<{
     id: string;
     status: string;
   } | null>(null);
+
+  // filter, sort, search state
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+
+  // pagination
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetch("/api/appointments", {
@@ -182,6 +167,46 @@ export default function AppointmentsPage() {
       .catch(() => setError("Something went wrong"))
       .finally(() => setLoading(false));
   }, []);
+
+  const filtered = useMemo(() => {
+    let result = [...appointments];
+
+    // search by patient name, doctor name or timeslot
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (a) =>
+          a.patientId?.name?.toLowerCase().includes(q) ||
+          a.doctorId?.name?.toLowerCase().includes(q) ||
+          a.timeSlot?.toLowerCase().includes(q),
+      );
+    }
+
+    // status filter
+    if (statusFilter !== "all") {
+      result = result.filter((a) => a.status === statusFilter);
+    }
+
+    // sort by date
+    result.sort((a, b) => {
+      const diff = new Date(a.date).getTime() - new Date(b.date).getTime();
+      return sortOrder === "asc" ? diff : -diff;
+    });
+
+    return result;
+  }, [appointments, search, statusFilter, sortOrder]);
+
+  // reset to page 1 whenever filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter, sortOrder]);
+
+  // paginate
+  const totalPages = Math.ceil(filtered.length / ITEMS_PER_PAGE);
+  const paginated = filtered.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE,
+  );
 
   async function executeStatusChange(id: string, status: string) {
     setPendingChange(null);
@@ -223,6 +248,10 @@ export default function AppointmentsPage() {
       return <span className="text-xs text-gray-400">No actions</span>;
     }
 
+    if (appt.status === "cancelled") {
+      return <span className="text-xs text-gray-400">Cancelled</span>;
+    }
+
     const actions: { label: string; status: string; color: string }[] = [];
 
     if (appt.status === "pending") {
@@ -254,45 +283,128 @@ export default function AppointmentsPage() {
         color: "text-red-500 border-red-200 hover:bg-red-50",
       });
     }
-    let content;
+    // let content;
 
-    if (appt.status === "completed") {
-      content = (
-        <Link
-          href={`/dashboard/visit/${appt._id}`}
-          onClick={(e) => e.stopPropagation()}
-          className="text-xs text-blue-600 border border-blue-200 px-2 py-1 rounded hover:bg-blue-50 transition"
-        >
-          {appt.hasVisitRecord ? "View Notes" : "Add Notes"}
-        </Link>
-      );
-    }
+    // if (appt.status === "completed") {
+    //   content = (
+    //     <Link
+    //       href={`/dashboard/visit/${appt._id}`}
+    //       onClick={(e) => e.stopPropagation()}
+    //       className={`text-xs px-2 py-1 border rounded transition text-center ${
+    //         appt.hasVisitRecord
+    //           ? "border-gray-300 text-gray-600 hover:bg-gray-50"
+    //           : "border-blue-300 text-blue-600 hover:bg-blue-50"
+    //       }`}
+    //     >
+    //       {appt.hasVisitRecord ? "View Notes" : "Add Notes"}
+    //     </Link>
+    //   );
+    // }
 
     return (
       <div className="flex flex-col gap-1">
-        {content ? (
-          <>{content}</>
-        ) : (
-          actions.map((action) => (
+        {/* {actions.map((action) => (
+          <button
+            disabled={statusLoading}
+            key={action.status}
+            onClick={(e) => {
+              e.stopPropagation(); // prevent row click opening detail modal
+              setPendingChange({ id: appt._id, status: action.status });
+            }}
+            className={`text-xs px-2 py-1 border rounded font-medium transition ${action.color}`}
+          >
+            {action.label}
+          </button>
+        ))} */}
+        {appt.status === "pending" && (
+          <>
             <button
               disabled={statusLoading}
-              key={action.status}
               onClick={(e) => {
-                e.stopPropagation(); // prevent row click opening detail modal
-                setPendingChange({ id: appt._id, status: action.status });
+                e.stopPropagation();
+                setPendingChange({ id: appt._id, status: "confirmed" });
               }}
-              className={`text-xs px-2 py-1 border rounded font-medium transition ${action.color}`}
+              className="text-xs px-2 py-1 border border-green-200 text-green-600 rounded hover:bg-green-50 transition"
             >
-              {action.label}
+              Confirm
             </button>
-          ))
+            <button
+              disabled={statusLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPendingChange({ id: appt._id, status: "cancelled" });
+              }}
+              className="text-xs px-2 py-1 border border-red-200 text-red-500 rounded hover:bg-red-50 transition"
+            >
+              Cancel
+            </button>
+          </>
+        )}
+        {appt.status === "confirmed" && (
+          <>
+            <button
+              disabled={statusLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPendingChange({ id: appt._id, status: "completed" });
+              }}
+              className="text-xs px-2 py-1 border border-blue-200 text-blue-600 rounded hover:bg-blue-50 transition"
+            >
+              Complete
+            </button>
+            <button
+              disabled={statusLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPendingChange({ id: appt._id, status: "no-show" });
+              }}
+              className="text-xs px-2 py-1 border border-orange-200 text-orange-500 rounded hover:bg-orange-50 transition"
+            >
+              No Show
+            </button>
+            <button
+              disabled={statusLoading}
+              onClick={(e) => {
+                e.stopPropagation();
+                setPendingChange({ id: appt._id, status: "cancelled" });
+              }}
+              className="text-xs px-2 py-1 border border-red-200 text-red-500 rounded hover:bg-red-50 transition"
+            >
+              Cancel
+            </button>
+          </>
+        )}
+        {appt.status === "completed" && (
+          <Link
+            href={`/dashboard/visit/${appt._id}`}
+            onClick={(e) => e.stopPropagation()}
+            className={`text-xs px-2 py-1 border rounded transition text-center ${
+              appt.hasVisitRecord
+                ? "border-gray-300 text-gray-600 hover:bg-gray-50"
+                : "border-blue-300 text-blue-600 hover:bg-blue-50"
+            }`}
+          >
+            {appt.hasVisitRecord ? "View Notes" : "Add Notes"}
+          </Link>
         )}
       </div>
     );
   }
 
-  if (loading) return <p className="text-gray-500">Loading appointments...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading)
+    return (
+      <>
+        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
+        <p className="text-gray-500">Loading appointments...</p>
+      </>
+    );
+  if (error && appointments.length !== 0)
+    return (
+      <>
+        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
+        <p className="text-red-500">{error}</p>
+      </>
+    );
 
   const content = (
     <div>
@@ -308,8 +420,54 @@ export default function AppointmentsPage() {
         )}
       </div>
 
-      {appointments.length === 0 ? (
-        <p className="text-gray-400">No appointments found.</p>
+      {/* ── FILTERS ROW ─────────────────────────── */}
+      <div className="flex flex-wrap gap-3 mb-4">
+        {/* Search */}
+        <div className="flex-1 min-w-[200px]">
+          <SearchInput
+            placeholder="Search by patient or doctor name..."
+            onSearch={setSearch}
+          />
+        </div>
+
+        {/* Status filter */}
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="all">All Statuses</option>
+          <option value="pending">Pending</option>
+          <option value="confirmed">Confirmed</option>
+          <option value="completed">Completed</option>
+          <option value="cancelled">Cancelled</option>
+          <option value="no-show">No Show</option>
+        </select>
+
+        {/* Sort order */}
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
+          className="border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="asc">Date: Earliest First</option>
+          <option value="desc">Date: Latest First</option>
+        </select>
+      </div>
+
+      {/* Result count */}
+      <p className="text-xs text-gray-400 mb-3">
+        {filtered.length} appointment{filtered.length !== 1 ? "s" : ""} found
+        {search || statusFilter !== "all" ? " (filtered)" : ""}
+      </p>
+
+      {/* Table */}
+      {paginated.length === 0 ? (
+        <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
+          <p className="text-gray-400 text-sm">
+            No appointments match your search.
+          </p>
+        </div>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
@@ -333,7 +491,7 @@ export default function AppointmentsPage() {
               </tr>
             </thead>
             <tbody>
-              {appointments.map((appt) => (
+              {paginated.map((appt) => (
                 <tr
                   key={appt._id}
                   onClick={() => setSelectedAppt(appt)}
@@ -358,14 +516,12 @@ export default function AppointmentsPage() {
                   </td>
                   <td
                     className="px-4 py-3"
-                    onClick={(e) => e.stopPropagation()} // prevents detail modal opening when clicking actions
+                    onClick={(e) => e.stopPropagation()}
                   >
                     {role === "doctor" && <DoctorActions appt={appt} />}
-
                     {role === "patient" &&
-                      appt.status !== "completed" &&
                       appt.status !== "cancelled" &&
-                      appt.status !== "no-show" && (
+                      appt.status !== "completed" && (
                         <button
                           disabled={statusLoading}
                           onClick={(e) => {
@@ -380,7 +536,6 @@ export default function AppointmentsPage() {
                           Cancel
                         </button>
                       )}
-
                     {role === "admin" && (
                       <span className="text-xs text-gray-400">Read only</span>
                     )}
@@ -391,6 +546,13 @@ export default function AppointmentsPage() {
           </table>
         </div>
       )}
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={setCurrentPage}
+      />
 
       {/* appointment detail modal */}
       {selectedAppt && (
@@ -421,8 +583,13 @@ export default function AppointmentsPage() {
   if (role === "patient") return content;
 
   return (
-    <ClinicGuard hasClinic={!!clinicId} role={role}>
-      {content}
-    </ClinicGuard>
+    <>
+      {!clinicId && (
+        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
+      )}
+      <ClinicGuard hasClinic={!!clinicId} role={role}>
+        {content}
+      </ClinicGuard>
+    </>
   );
 }

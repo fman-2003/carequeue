@@ -18,7 +18,7 @@ export interface AnalyticsData {
 }
 
 export function useAnalytics() {
-  const [data, setData] = useState<AnalyticsData | null>(null);
+  const [data, setData] = useState<AnalyticsData>();
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
   const [error, setError] = useState("");
 

@@ -124,21 +124,3 @@ export async function createMedicalDocument(data: {
   await connectDB();
   return await MedicalDocument.create(data);
 }
-
-export async function deleteMedicalDocument(
-  documentId: string,
-  userId: string,
-) {
-  await connectDB();
-
-  const doc = await MedicalDocument.findOneAndDelete({
-    _id: documentId,
-    uploadedBy: userId,
-  });
-
-  if (!doc) {
-    throw new Error("Document not found or access denied");
-  }
-
-  return { message: "Document deleted" };
-}

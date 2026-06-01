@@ -4,9 +4,30 @@
 
 import { useEffect, useState } from "react";
 import { getToken } from "@/lib/auth/getSession";
+import DocumentsSection from "@/components/ehr/DocumentsSection";
 
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const GENOTYPES = ["AA", "AS", "SS", "AC", "SC"];
+
+function getRoleFromToken(): string {
+  const token = getToken();
+  if (!token) return "";
+  try {
+    return JSON.parse(atob(token.split(".")[1])).role;
+  } catch {
+    return "";
+  }
+}
+
+function getUserIdFromToken(): string {
+  const token = getToken();
+  if (!token) return "";
+  try {
+    return JSON.parse(atob(token.split(".")[1])).userId;
+  } catch {
+    return "";
+  }
+}
 
 export default function HealthProfilePage() {
   const [profile, setProfile] = useState<any>(null);
@@ -529,6 +550,9 @@ export default function HealthProfilePage() {
         >
           {saving ? "Saving..." : "Save Health Profile"}
         </button>
+        <div className="mt-2">
+          <DocumentsSection patientId={getUserIdFromToken()} canUpload={true} />
+        </div>
       </div>
     </div>
   );

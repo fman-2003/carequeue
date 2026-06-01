@@ -6,7 +6,7 @@ export interface IMedicalProfile extends Document {
   bloodGroup?: "A+" | "A-" | "B+" | "B-" | "AB+" | "AB-" | "O+" | "O-";
   genotype?: "AA" | "AS" | "SS" | "AC" | "SC";
   dateOfBirth?: Date;
-  gender?: "male" | "female" | "other";
+  gender?: "male" | "female";
   height?: number;
   weight?: number;
   allergies: string[];
@@ -53,7 +53,7 @@ const MedicalProfileSchema = new Schema<IMedicalProfile>(
     dateOfBirth: { type: Date },
     gender: {
       type: String,
-      enum: ["male", "female", "other"],
+      enum: ["male", "female"],
     },
     height: { type: Number, min: 0 },
     weight: { type: Number, min: 0 },
