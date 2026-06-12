@@ -14,6 +14,7 @@ export interface IUser extends Document {
   role: "admin" | "doctor" | "receptionist" | "patient";
   clinicId?: mongoose.Types.ObjectId;
   preferredDoctorId?: mongoose.Types.ObjectId;
+  profilePicture?: string;
   phone?: string;
   isVerified: boolean;
   createdAt: Date;
@@ -46,6 +47,10 @@ const UserSchema = new Schema<IUser>(
     preferredDoctorId: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null,
+    },
+    profilePicture: {
+      type: String,
       default: null,
     },
     phone: { type: String, unique: true },

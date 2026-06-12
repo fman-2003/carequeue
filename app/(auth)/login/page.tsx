@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { saveToken } from "@/lib/auth/getSession";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,41 +43,44 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-2">CareQueue</h1>
-        <p className="text-gray-500 mb-6">Sign in to your account</p>
+    <main className="min-h-screen flex items-center bg-neutral-50">
+      <Image 
+        src="/doctor-talking-to-patient.jpg"
+        alt="Doctor talking to patient"
+        width={500}
+        height={100}
+        className="w-1/2 min-h-screen"
+      />
+      <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card p-8">
+        <h1 className="text-2xl font-bold text-neutral-800 mb-2">CareQueue</h1>
+        <p className="text-neutral-500 mb-6">Sign in to your account</p>
 
-        {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
+        {error && <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">{error}</div>}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Email
             </label>
             <input
               type="email"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-black w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="uith@carequeue.com"
               // required
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Password
             </label>
             <input
               type="password"
               value={form.password}
               onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="text-black w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
               placeholder="••••••••"
               // required
             />
@@ -85,14 +89,14 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+            className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition"
           >
             {loading ? "Signing in..." : "Sign In"}
           </button>
         </form>
-        <p className="text-sm text-center text-gray-500 mt-6">
+        <p className="text-sm text-center text-neutral-500 mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-blue-600 hover:underline">
+          <Link href="/signup" className="text-primary-600 hover:underline">
             Sign up
           </Link>
         </p>

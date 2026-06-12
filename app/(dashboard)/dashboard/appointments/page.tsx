@@ -283,39 +283,9 @@ export default function AppointmentsPage() {
         color: "text-red-500 border-red-200 hover:bg-red-50",
       });
     }
-    // let content;
-
-    // if (appt.status === "completed") {
-    //   content = (
-    //     <Link
-    //       href={`/dashboard/visit/${appt._id}`}
-    //       onClick={(e) => e.stopPropagation()}
-    //       className={`text-xs px-2 py-1 border rounded transition text-center ${
-    //         appt.hasVisitRecord
-    //           ? "border-gray-300 text-gray-600 hover:bg-gray-50"
-    //           : "border-blue-300 text-blue-600 hover:bg-blue-50"
-    //       }`}
-    //     >
-    //       {appt.hasVisitRecord ? "View Notes" : "Add Notes"}
-    //     </Link>
-    //   );
-    // }
 
     return (
       <div className="flex flex-col gap-1">
-        {/* {actions.map((action) => (
-          <button
-            disabled={statusLoading}
-            key={action.status}
-            onClick={(e) => {
-              e.stopPropagation(); // prevent row click opening detail modal
-              setPendingChange({ id: appt._id, status: action.status });
-            }}
-            className={`text-xs px-2 py-1 border rounded font-medium transition ${action.color}`}
-          >
-            {action.label}
-          </button>
-        ))} */}
         {appt.status === "pending" && (
           <>
             <button
@@ -423,7 +393,7 @@ export default function AppointmentsPage() {
       {/* ── FILTERS ROW ─────────────────────────── */}
       <div className="flex flex-wrap gap-3 mb-4">
         {/* Search */}
-        <div className="flex-1 min-w-[200px]">
+        <div className="flex-1 min-w-50">
           <SearchInput
             placeholder="Search by patient or doctor name..."
             onSearch={setSearch}
@@ -495,7 +465,7 @@ export default function AppointmentsPage() {
                 <tr
                   key={appt._id}
                   onClick={() => setSelectedAppt(appt)}
-                  className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
+                  className="odd:bg-neutral-50 even:bg-neutral-100 border-b border-neutral-300 cursor-pointer"
                 >
                   <td className="px-4 py-3 text-gray-800">
                     {appt.patientId?.name || "—"}

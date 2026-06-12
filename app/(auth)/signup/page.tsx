@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { saveToken } from "@/lib/auth/getSession";
 
 export default function SignupPage() {
@@ -60,12 +61,6 @@ export default function SignupPage() {
         );
         return;
       }
-
-      /**
-       * Save token immediately after registration —
-       * user is logged in as soon as they sign up,
-       * no need for a separate login step.
-       */
       saveToken(data.token);
       router.push("/dashboard");
     } catch {
@@ -76,13 +71,20 @@ export default function SignupPage() {
   };
 
   const inputClass =
-    "w-full border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500";
+    "w-full border border-neutral-300 rounded-lg px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-primary-500";
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50 py-10">
-      <div className="w-full max-w-md bg-white rounded-lg shadow p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">CareQueue</h1>
-        <p className="text-gray-500 text-sm mb-6">Create your account</p>
+    <main className="min-h-screen flex items-center justify-center bg-neutral-50 ">
+      <Image
+        src="/doctor-handling-patient.jpg"
+        alt="Doctor handling patient"
+        width={1000}
+        height={1000}
+        className="w-1/2 min-h-screen"
+      />
+      <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card px-8 py-4">
+        <h1 className="text-2xl font-bold text-neutral-800 mb-1">CareQueue</h1>
+        <p className="text-neutral-500 text-sm mb-6">Create your account</p>
 
         {error && (
           <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
@@ -92,7 +94,7 @@ export default function SignupPage() {
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Full Name
             </label>
             <input
@@ -105,7 +107,7 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Email Address
             </label>
             <input
@@ -118,9 +120,9 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               Phone Number{" "}
-              {/* <span className="text-gray-400 font-normal"></span> */}
+              {/* <span className="text-neutral-400 font-normal"></span> */}
             </label>
             <input
               type="tel"
@@ -131,7 +133,7 @@ export default function SignupPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-neutral-700 mb-1">
               I am signing up as
             </label>
             <select
@@ -146,7 +148,7 @@ export default function SignupPage() {
               {/* <option value="receptionist">Receptionist</option> */}
               <option value="admin">Clinic Admin</option>
             </select>
-            <p className="text-xs text-gray-400 mt-1">
+            <p className="text-xs text-neutral-400 mt-1">
               {form.role === "patient" &&
                 "Book appointments and manage your health visits."}
               {form.role === "doctor" &&
@@ -157,45 +159,46 @@ export default function SignupPage() {
                 "Create and manage your clinic. You will set up your clinic after signing up."}
             </p>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              className={inputClass}
-              placeholder="Minimum 6 characters"
-              required
-            />
+          <div className="flex flex-row justify-between gap-4">
+            <div className="w-1/2">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Password
+              </label>
+              <input
+                type="password"
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                className={inputClass}
+                placeholder="Minimum 6 characters"
+                required
+              />
+            </div>
+            <div className="w-1/2">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Confirm Password
+              </label>
+              <input
+                type="password"
+                value={form.confirm}
+                onChange={(e) => setForm({ ...form, confirm: e.target.value })}
+                className={inputClass}
+                placeholder="Repeat your password"
+                required
+              />
+            </div>
           </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm Password
-            </label>
-            <input
-              type="password"
-              value={form.confirm}
-              onChange={(e) => setForm({ ...form, confirm: e.target.value })}
-              className={inputClass}
-              placeholder="Repeat your password"
-              required
-            />
-          </div>
-
           <button
             type="submit"
             disabled={loading}
-            className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50 transition mt-2"
+            className="w-full bg-primary text-white py-2 rounded-lg font-medium hover:bg-primary-dark disabled:opacity-50 transition mt-2"
           >
             {loading ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
-        <p className="text-sm text-center text-gray-500 mt-6">
+        <p className="text-sm text-center text-neutral-500 mt-6">
           Already have an account?{" "}
-          <Link href="/login" className="text-blue-600 hover:underline">
+          <Link href="/login" className="text-primary hover:underline">
             Sign in
           </Link>
         </p>

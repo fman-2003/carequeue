@@ -94,7 +94,7 @@ export default function DashboardLayout({
   return (
     <div className="h-screen flex overflow-hidden bg-gray-50">
       {/* Sidebar */}
-      <aside className="w-56 bg-[#0f172a] border-r border-[#0f172a] flex flex-col flex-shrink-0 h-full">
+      <aside className="w-56 bg-[#0f172a] border-r border-[#0f172a] flex flex-col shrink-0 h-full">
         <div className="px-6 py-5 border-b border-[#0f172a]">
           <h1 className="text-lg font-bold text-white">CareQueue</h1>
           <p className="text-xs text-blue-200 capitalize mt-0.5">{userName}</p>
