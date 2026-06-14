@@ -14,7 +14,7 @@ export const signupSchema = z.object({
   role: z
     .enum(["admin", "doctor", "receptionist", "patient"])
     .default("patient"),
-  // clinicId: z.string().min(1, "Clinic is required"),
+  inviteCode: z.string().optional(),
 });
 
 export const loginSchema = z.object({
