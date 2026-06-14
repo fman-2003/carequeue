@@ -4,6 +4,7 @@
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/auth/getSession";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 export default function VisitRecordPage({
   params,
@@ -177,27 +178,35 @@ export default function VisitRecordPage({
   }
 
   const inputClass =
-    "w-full border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500";
-  const labelClass = "block text-sm font-medium text-gray-700 mb-1";
+    "w-full border border-neutral-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-primary-500";
+  const labelClass = "block text-sm font-medium text-neutral-700 mb-1";
   const textareaClass = `${inputClass} resize-none`;
 
-  if (loading) return <p className="text-gray-500">Loading...</p>;
+  if (loading) return (
+    <PageWrapper>
+      <h2 className="text-xl font-bold text-neutral-800">
+        {existing ? "Edit Visit Record" : "New Visit Record"}
+      </h2>
+      <p className="text-neutral-500">Loading...</p>
+    </PageWrapper>
+  );
 
   return (
+    <PageWrapper>
     <div className="max-w-2xl">
       <div className="flex items-center gap-3 mb-6">
         <button
           onClick={() => router.back()}
-          className="text-sm text-gray-500 hover:text-gray-700"
+          className="text-sm text-neutral-500 hover:text-neutral-700"
         >
           ← Back
         </button>
         <div>
-          <h2 className="text-xl font-bold text-gray-800">
+          <h2 className="text-xl font-bold text-neutral-800">
             {existing ? "Edit Visit Record" : "New Visit Record"}
           </h2>
           {appointment && (
-            <p className="text-sm text-gray-500 mt-0.5">
+            <p className="text-sm text-neutral-500 mt-0.5">
               {appointment.patientId?.name} ·{" "}
               {new Date(appointment.date).toDateString()} ·{" "}
               {appointment.timeSlot} ·{" "}
@@ -209,11 +218,11 @@ export default function VisitRecordPage({
 
       {/* patient profile summary for doc ref */}
       {profile && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <p className="text-xs font-semibold text-blue-700 uppercase tracking-wide mb-2">
+        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+          <p className="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-2">
             Patient Health Summary
           </p>
-          <div className="grid grid-cols-3 gap-3 text-xs text-blue-800">
+          <div className="grid grid-cols-3 gap-3 text-xs text-primary-800">
             <p>
               <span className="font-medium">Blood Group:</span>{" "}
               {profile.bloodGroup || "—"}
@@ -254,8 +263,8 @@ export default function VisitRecordPage({
       )}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <section className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">Vitals</h3>
+        <section className="bg-white border border-neutral-200 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-4">Vitals</h3>
           <div className="grid grid-cols-2 gap-4">
             {[
               {
@@ -313,8 +322,8 @@ export default function VisitRecordPage({
             ))}
           </div>
         </section>
-        <section className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        <section className="bg-white border border-neutral-200 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
             Clinical Notes
           </h3>
           <div className="flex flex-col gap-4">
@@ -380,24 +389,24 @@ export default function VisitRecordPage({
             </div>
           </div>
         </section>
-        <section className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        <section className="bg-white border border-neutral-200 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
             Prescriptions
           </h3>
           {form.prescriptions.map((rx: any, i: number) => (
             <div
               key={i}
-              className="flex items-start justify-between bg-gray-50 rounded p-3 mb-2"
+              className="flex items-start justify-between bg-neutral-50 rounded p-3 mb-2"
             >
               <div>
-                <p className="text-sm font-medium text-gray-800">
+                <p className="text-sm font-medium text-neutral-800">
                   {rx.medication}
                 </p>
-                <p className="text-xs text-gray-500">
+                <p className="text-xs text-neutral-500">
                   {rx.dosage} · {rx.frequency} · {rx.duration}
                 </p>
                 {rx.instructions && (
-                  <p className="text-xs text-gray-400">{rx.instructions}</p>
+                  <p className="text-xs text-neutral-400">{rx.instructions}</p>
                 )}
               </div>
               <button
@@ -416,8 +425,8 @@ export default function VisitRecordPage({
               </button>
             </div>
           ))}
-          <div className="border border-dashed border-gray-300 rounded p-4 mt-2">
-            <p className="text-xs text-gray-500 mb-3 font-medium">
+          <div className="border border-dashed border-neutral-300 rounded p-4 mt-2">
+            <p className="text-xs text-neutral-500 mb-3 font-medium">
               Add Prescription
             </p>
             <div className="grid grid-cols-2 gap-3">
@@ -440,7 +449,7 @@ export default function VisitRecordPage({
                 },
               ].map(({ label, key, placeholder }) => (
                 <div key={key}>
-                  <label className="block text-xs text-gray-600 mb-1">
+                  <label className="block text-xs text-neutral-600 mb-1">
                     {label}
                   </label>
                   <input
@@ -455,7 +464,7 @@ export default function VisitRecordPage({
                 </div>
               ))}
               <div className="col-span-2">
-                <label className="block text-xs text-gray-600 mb-1">
+                <label className="block text-xs text-neutral-600 mb-1">
                   Instructions (optional)
                 </label>
                 <input
@@ -491,14 +500,14 @@ export default function VisitRecordPage({
                   instructions: "",
                 });
               }}
-              className="mt-3 text-sm bg-blue-600 text-white px-4 py-1.5 rounded hover:bg-blue-700 transition"
+              className="mt-3 text-sm bg-primary-600 text-white px-4 py-1.5 rounded hover:bg-primary-700 transition"
             >
               + Add Prescription
             </button>
           </div>
         </section>
-        <section className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        <section className="bg-white border border-neutral-200 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
             Lab Tests Ordered
           </h3>
           <div className="flex gap-2 mb-3">
@@ -530,7 +539,7 @@ export default function VisitRecordPage({
                 });
                 setNewLab("");
               }}
-              className="px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              className="px-3 py-2 bg-primary-600 text-white rounded text-sm hover:bg-primary-700"
             >
               Add
             </button>
@@ -539,7 +548,7 @@ export default function VisitRecordPage({
             {form.labTestsOrdered.map((lab: string, i: number) => (
               <span
                 key={i}
-                className="flex items-center gap-1 bg-blue-50 text-blue-700 text-xs px-2 py-1 rounded-full"
+                className="flex items-center gap-1 bg-primary-50 text-primary-700 text-xs px-2 py-1 rounded-full"
               >
                 {lab}
                 <button
@@ -552,7 +561,7 @@ export default function VisitRecordPage({
                       ),
                     })
                   }
-                  className="hover:text-blue-900"
+                  className="hover:text-primary-900"
                 >
                   ✕
                 </button>
@@ -561,8 +570,8 @@ export default function VisitRecordPage({
           </div>
         </section>
 
-        <section className="bg-white border border-gray-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-gray-700 mb-4">
+        <section className="bg-white border border-neutral-200 rounded-lg p-5">
+          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
             Follow Up & Referral
           </h3>
           <div className="grid grid-cols-2 gap-4">
@@ -600,7 +609,7 @@ export default function VisitRecordPage({
             !form.clinicalNotes ||
             !form.treatmentPlan
           }
-          className="w-full bg-blue-600 text-white py-2.5 rounded font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+          className="w-full bg-primary-600 text-white py-2.5 rounded font-medium hover:bg-primary-700 disabled:opacity-50 transition"
         >
           {saving
             ? "Saving..."
@@ -610,5 +619,6 @@ export default function VisitRecordPage({
         </button>
       </form>
     </div>
+    </PageWrapper>
   );
 }

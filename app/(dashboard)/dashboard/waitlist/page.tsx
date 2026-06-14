@@ -5,6 +5,9 @@
 import { useEffect, useState, useRef } from "react";
 import { getToken } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
+import PageTour from "@/components/ui/PageTour";
+import { TOURS } from "@/lib/tour";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 // COUNTDOWN COMPONENT
 function Countdown({
@@ -260,11 +263,24 @@ export default function WaitlistPage() {
     }
   }
 
-  if (loading) return <p className="text-gray-500">Loading waitlist...</p>;
-  if (error) return <p className="text-red-500">{error}</p>;
+  if (loading)
+    return (
+      <PageWrapper>
+        <h2 className="text-xl font-bold text-gray-800">My Waitlist</h2>
+        <p className="text-gray-500">Loading waitlist...</p>
+      </PageWrapper>
+    );
+  if (error)
+    return (
+      <PageWrapper>
+        <h2 className="text-xl font-bold text-gray-800">My Waitlist</h2>
+        <p className="text-red-500">{error}</p>
+      </PageWrapper>
+    );
 
   return (
-    <div>
+    <PageWrapper>
+      <PageTour tourId="patient-waitlist" steps={TOURS.patient.waitlist} />
       <div className="flex items-center justify-between mb-2">
         <h2 className="text-xl font-bold text-gray-800">My Waitlist</h2>
 
@@ -384,6 +400,6 @@ export default function WaitlistPage() {
           error={joinError}
         />
       )}
-    </div>
+    </PageWrapper>
   );
 }

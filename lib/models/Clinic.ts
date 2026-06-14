@@ -5,14 +5,21 @@ export interface IClinic extends Document {
   address: string;
   phone: string;
   email: string;
-  state: string; // e.g. "Kwara", "Lagos"
-  lga: string; // Local Government Area
-  openingTime: string; // e.g. "08:00"
-  closingTime: string; // e.g. "17:00"
-  slotDurationMinutes: number; // how long each appointment slot is
-  workingDays: number[]; // 0=Sun, 1=Mon ... 6=Sat e.g. [1,2,3,4,5]
-  adminId: mongoose.Types.ObjectId; // the user who owns/manages this clinic
+  state: string;
+  lga: string;
+  openingTime: string;
+  closingTime: string;
+  slotDurationMinutes: number;
+  workingDays: number[];
+  adminId: mongoose.Types.ObjectId;
   isActive: boolean;
+  inviteCodes: {
+    code: string;
+    role: "doctor" | "receptionist";
+    usedBy: mongoose.Types.ObjectId | null;
+    isUsed: boolean;
+    createdAt: Date;
+  }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -31,6 +38,22 @@ const ClinicSchema = new Schema<IClinic>(
     workingDays: { type: [Number], default: [1, 2, 3, 4, 5] },
     adminId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     isActive: { type: Boolean, default: true },
+    inviteCodes: {
+      type: [
+        {
+          code: { type: String, required: true, unique: true },
+          role: {
+            type: String,
+            enum: ["doctor", "receptionist"],
+            required: true,
+          },
+          usedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
+          isUsed: { type: Boolean, default: false },
+          createdAt: { type: Date, default: Date.now },
+        },
+      ],
+      default: [],
+    },
   },
   { timestamps: true },
 );

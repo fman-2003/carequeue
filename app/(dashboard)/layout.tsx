@@ -1,132 +1,242 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { isAuthenticated, getToken, clearToken } from "@/lib/auth/getSession";
-import AISchedulingPanel from "@/components/AISchedulingPanel";
+import { isAuthenticated, clearToken, getToken } from "@/lib/auth/getSession";
+import AISchedulingPanel from "@/components/layout/AISchedulingPanel";
+import AppBar from "@/components/layout/AppBar";
+
+// MUI Icons
+import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
+import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutlined";
+import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
+import HealingOutlinedIcon from "@mui/icons-material/HealingOutlined";
+import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
+import MedicalInformationOutlinedIcon from "@mui/icons-material/MedicalInformationOutlined";
+import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
+import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import LocalHospitalOutlinedIcon from "@mui/icons-material/LocalHospitalOutlined";
+import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
+import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
+import type { SvgIconComponent } from "@mui/icons-material";
+
+interface NavLink {
+  href: string;
+  label: string;
+  Icon: SvgIconComponent;
+}
+
+function getRoleFromToken(): string {
+  const token = getToken();
+  if (!token) return "";
+  try {
+    return JSON.parse(atob(token.split(".")[1])).role;
+  } catch {
+    return "";
+  }
+}
+
+function getNameFromToken(): string {
+  const token = getToken();
+  if (!token) return "";
+  try {
+    return JSON.parse(atob(token.split(".")[1])).name || "";
+  } catch {
+    return "";
+  }
+}
+
+const NAV_LINKS: Record<string, NavLink[]> = {
+  admin: [
+    { href: "/dashboard", label: "Overview", Icon: DashboardOutlinedIcon },
+    {
+      href: "/dashboard/appointments",
+      label: "Appointments",
+      Icon: CalendarMonthOutlinedIcon,
+    },
+    { href: "/dashboard/users", label: "Users", Icon: PeopleAltOutlinedIcon },
+    {
+      href: "/dashboard/clinic",
+      label: "My Clinic",
+      Icon: LocalHospitalOutlinedIcon,
+    },
+  ],
+  doctor: [
+    { href: "/dashboard", label: "Overview", Icon: DashboardOutlinedIcon },
+    {
+      href: "/dashboard/appointments",
+      label: "Appointments",
+      Icon: CalendarMonthOutlinedIcon,
+    },
+    {
+      href: "/dashboard/appointments/new",
+      label: "Book Slot",
+      Icon: AddCircleOutlineIcon,
+    },
+    {
+      href: "/dashboard/my-patients",
+      label: "My Patients",
+      Icon: PeopleAltOutlinedIcon,
+    },
+  ],
+  receptionist: [
+    { href: "/dashboard", label: "Overview", Icon: DashboardOutlinedIcon },
+    {
+      href: "/dashboard/appointments",
+      label: "Appointments",
+      Icon: CalendarMonthOutlinedIcon,
+    },
+    {
+      href: "/dashboard/appointments/new",
+      label: "Book Slot",
+      Icon: AddCircleOutlineIcon,
+    },
+    {
+      href: "/dashboard/waitlist",
+      label: "Waitlist",
+      Icon: ListAltOutlinedIcon,
+    },
+  ],
+  patient: [
+    { href: "/dashboard", label: "Overview", Icon: DashboardOutlinedIcon },
+    {
+      href: "/dashboard/appointments",
+      label: "Appointments",
+      Icon: CalendarMonthOutlinedIcon,
+    },
+    {
+      href: "/dashboard/appointments/new",
+      label: "Book Slot",
+      Icon: AddCircleOutlineIcon,
+    },
+    {
+      href: "/dashboard/waitlist",
+      label: "Waitlist",
+      Icon: ListAltOutlinedIcon,
+    },
+    {
+      href: "/dashboard/health",
+      label: "Health Profile",
+      Icon: HealingOutlinedIcon,
+    },
+    {
+      href: "/dashboard/my-records",
+      label: "My Records",
+      Icon: FolderOpenOutlinedIcon,
+    },
+    {
+      href: "/dashboard/settings",
+      label: "Settings",
+      Icon: SettingsOutlinedIcon,
+    },
+  ],
+};
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const [userName, setUserName] = useState("");
   const router = useRouter();
   const pathname = usePathname();
-  const token = useMemo(() => getToken(), []);
-  const role = useMemo(() => {
-    try {
-      if (!token) return null;
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      return payload.role;
-    } catch {
-      return null;
-    }
-  }, [token]);
+  const [role, setRole] = useState("");
+  const [name, setName] = useState("");
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push("/login");
       return;
     }
-    async function fetchUserData() {
-      const userRes = await fetch("/api/users/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      const userData = await userRes.json();
-      if (role === "doctor" && userData.user) {
-        setUserName(`Dr. ${userData.user.name || "Doctor"}`);
-      }
-      if (role === "admin" && userData.user) {
-        setUserName(`Admin ${userData.user.name || "Admin"}`);
-      }
-      if (role === "receptionist" && userData.user) {
-        setUserName(`Receptionist ${userData.user.name || "Receptionist"}`);
-      }
-      if (role === "patient" && userData.user) {
-        setUserName(`Patient ${userData.user.name || "Patient"}`);
-      }
+    function setStates() {
+      setRole(getRoleFromToken());
+      setName(getNameFromToken());
     }
-    fetchUserData();
-  }, [router, token, role]);
+    setStates();
+  }, [router]);
 
   const handleLogout = () => {
     clearToken();
-    return router.push("/login");
+    router.push("/login");
   };
 
-  const navLinks = {
-    admin: [
-      { href: "/dashboard", label: "Overview" },
-      { href: "/dashboard/appointments", label: "Appointments" },
-      { href: "/dashboard/users", label: "Users" },
-      { href: "/dashboard/clinic", label: "My Clinic" },
-    ],
-    doctor: [
-      { href: "/dashboard", label: "Overview" },
-      { href: "/dashboard/appointments", label: "Appointments" },
-      { href: "/dashboard/my-patients", label: "My Patients" },
-      { href: "/dashboard/settings", label: "Settings" },
-    ],
-    patient: [
-      { href: "/dashboard", label: "Overview" },
-      { href: "/dashboard/appointments", label: "Appointments" },
-      { href: "/dashboard/appointments/new", label: "Book Slot" },
-      { href: "/dashboard/waitlist", label: "Waitlist" },
-      { href: "/dashboard/health", label: "Health Profile" },
-      { href: "/dashboard/my-records", label: "My Records" },
-      { href: "/dashboard/settings", label: "Settings" },
-    ],
-    receptionist: [
-      { href: "/dashboard", label: "Overview" },
-      { href: "/dashboard/appointments", label: "Appointments" },
-      { href: "/dashboard/appointments/new", label: "Book Slot" },
-      { href: "/dashboard/waitlist", label: "Waitlist" },
-    ],
-  };
-
-  const links = navLinks[role as keyof typeof navLinks] || [];
+  const links = NAV_LINKS[role] || [];
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gray-50">
-      {/* Sidebar */}
-      <aside className="w-56 bg-[#0f172a] border-r border-[#0f172a] flex flex-col shrink-0 h-full">
-        <div className="px-6 py-5 border-b border-[#0f172a]">
-          <h1 className="text-lg font-bold text-white">CareQueue</h1>
-          <p className="text-xs text-blue-200 capitalize mt-0.5">{userName}</p>
+    <div className="h-screen flex overflow-hidden bg-neutral-50">
+      <aside
+        className="flex flex-col shrink-0 h-full bg-neutral-900"
+        style={{ width: "var(--sidebar-width)" }}
+      >
+        <div className="px-5 py-5 border-b border-white/10 flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-sm">CQ</span>
+          </div>
+          <div>
+            <h1 className="text-sm font-bold text-white leading-none">
+              CareQueue
+            </h1>
+            <p className="text-xs text-neutral-400 capitalize mt-0.5">{role}</p>
+          </div>
         </div>
-
-        <nav className="flex-1 px-4 py-4 flex flex-col gap-1 overflow-y-auto">
-          {links.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className={`px-3 py-2 rounded text-sm font-medium transition ${
-                pathname === link.href
-                  ? "bg-white/10 text-white"
-                  : "text-blue-100 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {link.label}
-            </Link>
-          ))}
+        <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
+          {links.map(({ href, label, Icon }) => {
+            const isActive = pathname === href;
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
+                  isActive
+                    ? "bg-primary text-white shadow-primary/30 shadow-sm"
+                    : "text-neutral-400 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <Icon sx={{ fontSize: 18 }} />
+                <span>{label}</span>
+              </Link>
+            );
+          })}
         </nav>
-
-        <div className="px-4 py-4 border-t border-[#0f172a]">
+        <div className="px-3 py-4 border-t border-white/10">
+          <Link
+            href="/dashboard/profile"
+            className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-white/5 transition-colors mb-1"
+          >
+            <div className="w-7 h-7 rounded-full bg-gradient-primary flex items-center justify-center shrink-0">
+              <span className="text-white text-xs font-bold">
+                {name?.charAt(0)?.toUpperCase() || "U"}
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-medium text-white truncate">
+                {name || "User"}
+              </p>
+              <p className="text-xs text-neutral-500 capitalize">{role}</p>
+            </div>
+          </Link>
           <button
             onClick={handleLogout}
-            className="w-full text-left px-3 py-2 text-sm text-red-300 hover:bg-white/10 rounded transition"
+            className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-neutral-400 hover:bg-white/5 hover:text-red-400 transition-all text-sm"
           >
-            Logout
+            <LogoutOutlinedIcon sx={{ fontSize: 18 }} />
+            <span>Logout</span>
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-8 overflow-y-auto">{children}</main>
-      {role === "patient" ? <AISchedulingPanel /> : null}
+
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        <AppBar />
+        <main
+          className="flex-1 overflow-y-auto p-6"
+          style={{ paddingTop: "calc(var(--appbar-height) + 1.5rem)" }}
+        >
+          {children}
+        </main>
+      </div>
+      <AISchedulingPanel />
     </div>
   );
 }

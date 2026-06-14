@@ -6,6 +6,9 @@ import { getToken } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import SearchInput from "@/components/ui/SearchInput";
 import DocumentsSection from "@/components/ehr/DocumentsSection";
+import PageTour from '@/components/ui/PageTour'
+import { TOURS } from '@/lib/tour'
+import PageWrapper from "@/components/layout/PageWrapper";
 
 function getRoleFromToken(): string {
   const token = getToken();
@@ -108,10 +111,10 @@ export default function MyPatientsPage() {
 
   if (loading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Patients</h2>
         <p className="text-gray-500">Loading patients...</p>
-      </>
+      </PageWrapper>
     );
   if (error)
     return (
@@ -121,7 +124,11 @@ export default function MyPatientsPage() {
       </>
     );
   return (
-    <>
+    <PageWrapper>
+      <PageTour
+        tourId="doctor-my-patients"
+        steps={TOURS.doctor["my-patients"]}
+      />
       <h2 className="text-xl font-bold text-gray-800">My Patients</h2>
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div className="flex items-center justify-between mb-6">
@@ -536,6 +543,6 @@ export default function MyPatientsPage() {
           </div>
         )}
       </ClinicGuard>
-    </>
+    </PageWrapper>
   );
 }

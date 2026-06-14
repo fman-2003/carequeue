@@ -6,6 +6,9 @@ import { useEffect, useState, useMemo } from "react";
 import { getToken } from "@/lib/auth/getSession";
 import SearchInput from "@/components/ui/SearchInput";
 import Pagination from "@/components/ui/Pagination";
+import PageTour from "@/components/ui/PageTour";
+import { TOURS } from "@/lib/tour";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -65,10 +68,21 @@ export default function MyRecordsPage() {
     currentPage * ITEMS_PER_PAGE,
   );
 
-  if (loading) return <p className="text-gray-500">Loading your records...</p>;
+  if (loading) return (
+    <PageWrapper>
+      <h2 className="text-xl font-bold text-gray-800 mb-2">
+        My Health Records
+      </h2>
+      <p className="text-gray-500">Loading your records...</p>
+    </PageWrapper>
+  );
 
   return (
-    <div>
+    <PageWrapper>
+      <PageTour
+        tourId="patient-my-records"
+        steps={TOURS.patient["my-records"]}
+      />
       <h2 className="text-xl font-bold text-gray-800 mb-2">
         My Health Records
       </h2>
@@ -267,6 +281,6 @@ export default function MyRecordsPage() {
         totalPages={totalPages}
         onPageChange={setCurrentPage}
       />
-    </div>
+    </PageWrapper>
   );
 }

@@ -8,6 +8,9 @@ import ClinicGuard from "@/components/ClinicGuard";
 import ConfirmModal from "@/components/ConfirmModal";
 import Pagination from "@/components/ui/Pagination";
 import SearchInput from "@/components/ui/SearchInput";
+import PageTour from "@/components/ui/PageTour";
+import { TOURS } from "@/lib/tour";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 const ITEMS_PER_PAGE = 15;
 
@@ -363,21 +366,33 @@ export default function AppointmentsPage() {
 
   if (loading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
         <p className="text-gray-500">Loading appointments...</p>
-      </>
+      </PageWrapper>
     );
   if (error && appointments.length !== 0)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
         <p className="text-red-500">{error}</p>
-      </>
+      </PageWrapper>
     );
 
+  const tourSteps =
+    role === "admin"
+      ? TOURS.admin.appointments
+      : role === "doctor"
+        ? TOURS.doctor.appointments
+        : role === "patient"
+          ? TOURS.patient.appointments
+          : [];
+
   const content = (
-    <div>
+    <PageWrapper>
+      {tourSteps.length > 0 && (
+        <PageTour tourId={`${role}-appointments`} steps={tourSteps} />
+      )}
       <div className="flex items-center justify-between mb-6">
         <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
         {(role === "doctor" || role === "receptionist") && (
@@ -546,7 +561,7 @@ export default function AppointmentsPage() {
           onCancel={() => setPendingChange(null)}
         />
       )}
-    </div>
+    </PageWrapper>
   );
 
   // patients don't need clinic guard on appointments

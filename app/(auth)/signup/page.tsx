@@ -15,7 +15,7 @@ export default function SignupPage() {
     password: "",
     confirm: "",
     phone: "",
-    role: "patient" as "patient" | "doctor" | "admin",
+    role: "patient" as "patient" | "doctor" | "admin" | "receptionist",
   });
 
   const [error, setError] = useState("");
@@ -159,6 +159,27 @@ export default function SignupPage() {
                 "Create and manage your clinic. You will set up your clinic after signing up."}
             </p>
           </div>
+          {(form.role === "doctor" || form.role === "receptionist") && (
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                Invite Code
+                <span className="text-error ml-1">*</span>
+              </label>
+              <input
+                type="text"
+                value={form.inviteCode || ""}
+                onChange={(e) =>
+                  setForm({ ...form, inviteCode: e.target.value.toUpperCase() })
+                }
+                className={inputClass}
+                placeholder="CQ-XXXXXXXX"
+                required
+              />
+              <p className="text-xs text-neutral-400 mt-1">
+                Get this code from your clinic admin.
+              </p>
+            </div>
+          )}
           <div className="flex flex-row justify-between gap-4">
             <div className="w-1/2">
               <label className="block text-sm font-medium text-neutral-700 mb-1">

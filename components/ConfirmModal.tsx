@@ -1,5 +1,8 @@
 "use client";
 
+import { motion, AnimatePresence } from "framer-motion";
+import {styles} from "../app/styles"
+
 interface ConfirmModalProps {
   title: string;
   message: string;
@@ -7,7 +10,7 @@ interface ConfirmModalProps {
   cancelText?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  danger?: boolean; // red confirm button for destructive actions
+  danger?: boolean;
 }
 
 export default function ConfirmModal({
@@ -20,29 +23,56 @@ export default function ConfirmModal({
   danger = false,
 }: ConfirmModalProps) {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm mx-4">
-        <h3 className="font-bold text-gray-800 text-base mb-2">{title}</h3>
-        <p className="text-sm text-gray-600 mb-6">{message}</p>
-        <div className="flex gap-3 justify-end">
-          <button
-            onClick={onCancel}
-            className="px-4 py-2 text-sm border border-gray-300 rounded text-gray-600 hover:bg-gray-50 transition"
-          >
-            {cancelText}
-          </button>
-          <button
-            onClick={onConfirm}
-            className={`px-4 py-2 text-sm rounded text-white font-medium transition ${
-              danger
-                ? "bg-red-500 hover:bg-red-600"
-                : "bg-blue-600 hover:bg-blue-700"
-            }`}
-          >
-            {confirmText}
-          </button>
-        </div>
-      </div>
-    </div>
+    <AnimatePresence>
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
+        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        style={{
+          backgroundColor: "rgba(15, 23, 42, 0.4)",
+          backdropFilter: "blur(4px)",
+          WebkitBackdropFilter: "blur(4px)",
+        }}
+        onClick={onCancel}
+      >
+        <motion.div
+          key="modal"
+          initial={{ opacity: 0, scale: 0.94, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.94, y: 16 }}
+          transition={{ type: "spring", stiffness: 300, damping: 25 }}
+          className="bg-white rounded-2xl shadow-strong p-6 w-full max-w-sm"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 className="font-bold text-neutral-800 text-base mb-2">{title}</h3>
+          <p className="text-sm text-neutral-500 mb-6 leading-relaxed">
+            {message}
+          </p>
+
+          <div className="flex gap-3 justify-end">
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={onCancel}
+              className={`${styles.btnGhost} text-sm`}
+            >
+              {cancelText}
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.97 }}
+              onClick={onConfirm}
+              className={danger ? `${styles.btnDanger} text-sm` : `${styles.btnPrimary} text-sm`}
+            >
+              {confirmText}
+            </motion.button>
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
   );
 }

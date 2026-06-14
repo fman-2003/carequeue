@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { getToken } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 function getFromToken(field: string): string {
   const token = getToken();
@@ -179,6 +180,7 @@ export default function NewAppointmentPage() {
     "w-full border border-gray-300 rounded px-3 py-2 text-sm text-black";
 
   return (
+    <PageWrapper>
     <div className="max-w-lg">
       <h2 className="text-xl font-bold text-gray-800 mb-6">Book Appointment</h2>
 
@@ -339,5 +341,6 @@ export default function NewAppointmentPage() {
         </form>
       </ClinicGuard>
     </div>
+    </PageWrapper>
   );
 }

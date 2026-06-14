@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { getToken } from "@/lib/auth/getSession";
-
+import {motion} from "framer-motion"
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -47,7 +47,7 @@ export default function AISchedulingPanel() {
         {
           role: "assistant",
           content:
-            'Hi! I can help you find the best appointment slot. Just describe what you need — for example: "I need a morning appointment next week" or "Any slot with Dr. Smith this Friday".',
+            'Hi! I can help you find the best appointment slot. Just describe what you need — for example: "I need a morning appointment next week" or "Any slot with Dr. Adekunle Olatunji this Friday".',
         },
       ]);
     }
@@ -220,7 +220,7 @@ export default function AISchedulingPanel() {
 
       {/* SLIDING PANEL */}
       <div
-        className={`fixed top-0 right-0 h-full w-[380px] bg-white shadow-2xl z-30 flex flex-col transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-95 bg-white shadow-2xl z-30 flex flex-col transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -362,8 +362,15 @@ export default function AISchedulingPanel() {
        * Clicking it closes the panel.
        */}
       {open && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-20 z-20"
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 z-20"
+          style={{
+            backgroundColor: "rgba(15, 23, 42, 0.25)",
+            backdropFilter: "blur(2px)",
+          }}
           onClick={() => setOpen(false)}
         />
       )}

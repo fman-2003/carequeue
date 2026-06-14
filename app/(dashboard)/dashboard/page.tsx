@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -13,6 +12,9 @@ import NoShowBarChart from "@/components/charts/NoShowBarChart";
 import PeakHoursHeatmap from "@/components/charts/PeakHoursHeatmap";
 import MonthlyTrendChart from "@/components/charts/MonthlyTrendChart";
 import RiskDistributionChart from "@/components/charts/RiskDistributionChart";
+import PageTour from "@/components/ui/PageTour";
+import { TOURS } from "@/lib/tour";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 function getRoleFromToken(): string {
   const token = getToken();
@@ -52,7 +54,7 @@ function AdminOverview() {
         setStats({
           total: appointments.length,
           today: appointments.filter(
-            (a: { date: string | number | Date; }) =>
+            (a: { date: string | number | Date }) =>
               new Date(a.date).toDateString() === new Date().toDateString(),
           ).length,
           confirmed: appointments.filter((a: any) => a.status === "confirmed")
@@ -68,12 +70,12 @@ function AdminOverview() {
 
   if (loading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">
           Clinic Overview
         </h2>
         <p className="text-gray-500">Loading...</p>
-      </>
+      </PageWrapper>
     );
 
   // const cards = [
@@ -85,26 +87,27 @@ function AdminOverview() {
 
   if (analyticsLoading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">
           Clinic Overview
         </h2>
         <p className="text-gray-500">Loading analytics...</p>
-      </>
+      </PageWrapper>
     );
   if (error && clinicId)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">
           Clinic Overview
         </h2>
         <p className="text-red-500">{error}</p>
-      </>
+      </PageWrapper>
     );
   // if (!data) return null;
 
   return (
-    <>
+    <PageWrapper>
+      <PageTour tourId="admin-dashboard" steps={TOURS.admin.dashboard} />
       <h2 className="text-xl font-bold text-gray-800 mb-6">Clinic Overview</h2>
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
@@ -153,7 +156,7 @@ function AdminOverview() {
           )}
         </div>
       </ClinicGuard>
-    </>
+    </PageWrapper>
   );
 }
 
@@ -175,25 +178,25 @@ function DoctorOverview() {
 
   if (loading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
         <p className="text-gray-500">Loading...</p>
-      </>
+      </PageWrapper>
     );
 
   if (analyticsLoading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
         <p className="text-gray-500">Loading...</p>
-      </>
+      </PageWrapper>
     );
   if (error && clinicId)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
         <p className="text-red-500">{error}</p>
-      </>
+      </PageWrapper>
     );
 
   const today = new Date().toDateString();
@@ -203,9 +206,9 @@ function DoctorOverview() {
 
   if (!data) {
     return (
-      <>
+      <PageWrapper>
+        <PageTour tourId="doctor-dashboard" steps={TOURS.doctor.dashboard} />
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
-
         <div>
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg border border-gray-200 p-5">
@@ -275,12 +278,13 @@ function DoctorOverview() {
                   </div>
           </div> */}
         </div>
-      </>
+      </PageWrapper>
     );
   }
 
   return (
-    <>
+    <PageWrapper>
+      <PageTour tourId="doctor-dashboard" steps={TOURS.doctor.dashboard} />
       <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
@@ -350,7 +354,7 @@ function DoctorOverview() {
           </div>
         </div>
       </ClinicGuard>
-    </>
+    </PageWrapper>
   );
 }
 
@@ -391,10 +395,10 @@ function PatientOverview() {
 
   if (loading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
         <p className="text-gray-500">Loading...</p>
-      </>
+      </PageWrapper>
     );
 
   const upcoming = appointments
@@ -404,22 +408,23 @@ function PatientOverview() {
 
   if (analyticsLoading)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
         <p className="text-gray-500">Loading...</p>
-      </>
+      </PageWrapper>
     );
   if (error && clinicId)
     return (
-      <>
+      <PageWrapper>
         <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
         <p className="text-red-500">{error}</p>
-      </>
+      </PageWrapper>
     );
   // if (!data) return null;
 
   return (
-    <>
+    <PageWrapper>
+      <PageTour tourId="patient-dashboard" steps={TOURS.patient.dashboard} />
       <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
@@ -512,7 +517,7 @@ function PatientOverview() {
           )}
         </div>
       </ClinicGuard>
-    </>
+    </PageWrapper>
   );
 }
 

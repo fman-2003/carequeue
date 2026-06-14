@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { getToken, saveToken } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
+import PageWrapper from "@/components/layout/PageWrapper";
 
 function getRoleFromToken(): string {
   const token = getToken();
@@ -258,357 +259,367 @@ export default function SettingsPage() {
 
   const strength = getPasswordStrength(passwordForm.newPassword);
 
-  if (loading) return <p className="text-gray-500">Loading settings...</p>;
+  if (loading) return <PageWrapper>
+  <h2 className="text-xl font-bold text-gray-800">Settings</h2>
+   <p className="text-gray-500">Loading settings...</p>
+  </PageWrapper>;
 
   const doctorAlreadySet =
     profile?.clinicId && (role === "doctor" || role === "receptionist");
 
   return (
-    <div className="max-w-lg flex flex-col gap-6">
-      <h2 className="text-xl font-bold text-gray-800">Settings</h2>
+    <PageWrapper>
+      <div className="max-w-lg flex flex-col gap-6">
+        <h2 className="text-xl font-bold text-gray-800">Settings</h2>
 
-      {role !== "admin" && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-base font-semibold text-gray-700 mb-1">
-            My Clinic
-          </h3>
+        {role !== "admin" && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-base font-semibold text-gray-700 mb-1">
+              My Clinic
+            </h3>
 
-          {(role === "doctor" || role === "receptionist") &&
-            !profile?.clinicId && (
-              <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-4">
-                ⚠️ Once you set your clinic you cannot change it. Choose
-                carefully.
-              </p>
-            )}
-
-          {doctorAlreadySet ? (
-            // doctor/receptionist — show current clinic, locked
-            <div className="bg-gray-50 border border-gray-200 rounded px-4 py-3">
-              <p className="text-xs text-gray-400 mb-0.5">Current clinic</p>
-              <p className="font-medium text-gray-800">
-                {clinics.find(
-                  (c) => c._id === (profile.clinicId?._id || profile.clinicId),
-                )?.name || "Your clinic"}
-              </p>
-              <p className="text-xs text-gray-400 mt-1">
-                Contact support to change your clinic assignment.
-              </p>
-            </div>
-          ) : (
-            <>
-              {clinicMessage && (
-                <p className="text-green-600 text-sm mb-3">{clinicMessage}</p>
-              )}
-              {clinicError && (
-                <p className="text-red-500 text-sm mb-3">{clinicError}</p>
+            {(role === "doctor" || role === "receptionist") &&
+              !profile?.clinicId && (
+                <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-3 py-2 mb-4">
+                  ⚠️ Once you set your clinic you cannot change it. Choose
+                  carefully.
+                </p>
               )}
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select clinic
-                </label>
-                <select
-                  value={selectedClinic}
-                  onChange={(e) => setSelectedClinic(e.target.value)}
-                  className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                >
-                  <option className="text-black" value="">
-                    — Select a clinic —
-                  </option>
-                  {clinics.map((c) => (
-                    <option className="text-black" key={c._id} value={c._id}>
-                      {c.name} · {c.state}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                onClick={() => setShowClinicModal(true)}
-                disabled={clinicSaving || !selectedClinic}
-                className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
-              >
-                {clinicSaving ? "Saving..." : "Save Clinic"}
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* PREFERRED DOCTOR (PATIENTS ONLY) */}
-      {role === "patient" && profile?.clinicId && (
-        <div className="bg-white border border-gray-200 rounded-lg p-6">
-          <h3 className="text-base font-semibold text-gray-700 mb-4">
-            Preferred Doctor
-          </h3>
-
-          {doctorMessage && (
-            <p className="text-green-600 text-sm mb-3">{doctorMessage}</p>
-          )}
-          {doctorError && (
-            <p className="text-red-500 text-sm mb-3">{doctorError}</p>
-          )}
-
-          {doctors.length === 0 ? (
-            <p className="text-sm text-gray-400">
-              No doctors available at your current clinic.
-            </p>
-          ) : (
-            <>
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Select a doctor
-                </label>
-                <select
-                  value={preferredDoctor}
-                  onChange={(e) => {
-                    setPendingDoctorValue(e.target.value);
-                  }}
-                  className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                >
-                  <option className="text-black" value="">
-                    — No preferred doctor —
-                  </option>
-                  {doctors.map((d) => (
-                    <option className="text-black" key={d._id} value={d._id}>
-                      {d.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <button
-                onClick={() => setShowDoctorModal(true)}
-                disabled={
-                  doctorSaving || pendingDoctorValue === preferredDoctor
-                }
-                className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
-              >
-                {doctorSaving ? "Saving..." : "Save Preferred Doctor"}
-              </button>
-            </>
-          )}
-        </div>
-      )}
-
-      {/* ── PASSWORD CHANGE SECTION ─────────────── */}
-      <div className="bg-white border border-gray-200 rounded-lg p-6">
-        <h3 className="text-base font-semibold text-gray-700 mb-1">
-          Change Password
-        </h3>
-        <p className="text-xs text-gray-400 mb-4">
-          You must enter your current password to set a new one.
-        </p>
-
-        {passwordMessage && (
-          <p className="text-green-600 text-sm mb-3">{passwordMessage}</p>
-        )}
-        {passwordError && (
-          <p className="text-red-500 text-sm mb-3">{passwordError}</p>
-        )}
-
-        <div className="flex flex-col gap-4">
-          {/* Current password */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Current Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPasswords.current ? "text" : "password"}
-                value={passwordForm.currentPassword}
-                onChange={(e) =>
-                  setPasswordForm({
-                    ...passwordForm,
-                    currentPassword: e.target.value,
-                  })
-                }
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter current password"
-              />
-              {/*Toggle password visibility button */}
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPasswords((p) => ({ ...p, current: !p.current }))
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
-              >
-                {showPasswords.current ? "Hide" : "Show"}
-              </button>
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPasswords.new ? "text" : "password"}
-                value={passwordForm.newPassword}
-                onChange={(e) =>
-                  setPasswordForm({
-                    ...passwordForm,
-                    newPassword: e.target.value,
-                  })
-                }
-                className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Minimum 6 characters"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPasswords((p) => ({ ...p, new: !p.new }))}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
-              >
-                {showPasswords.new ? "Hide" : "Show"}
-              </button>
-            </div>
-
-            {/* Password strength bar */}
-            {passwordForm.newPassword && (
-              <div className="mt-2">
-                <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
-                    style={{ width: strength.width }}
-                  />
-                </div>
-                <p
-                  className={`text-xs mt-1 ${
-                    strength.label === "Strong"
-                      ? "text-green-600"
-                      : strength.label === "Fair"
-                        ? "text-yellow-600"
-                        : "text-red-500"
-                  }`}
-                >
-                  {strength.label}
+            {doctorAlreadySet ? (
+              // doctor/receptionist — show current clinic, locked
+              <div className="bg-gray-50 border border-gray-200 rounded px-4 py-3">
+                <p className="text-xs text-gray-400 mb-0.5">Current clinic</p>
+                <p className="font-medium text-gray-800">
+                  {clinics.find(
+                    (c) =>
+                      c._id === (profile.clinicId?._id || profile.clinicId),
+                  )?.name || "Your clinic"}
+                </p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Contact support to change your clinic assignment.
                 </p>
               </div>
+            ) : (
+              <>
+                {clinicMessage && (
+                  <p className="text-green-600 text-sm mb-3">{clinicMessage}</p>
+                )}
+                {clinicError && (
+                  <p className="text-red-500 text-sm mb-3">{clinicError}</p>
+                )}
+
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select clinic
+                  </label>
+                  <select
+                    value={selectedClinic}
+                    onChange={(e) => setSelectedClinic(e.target.value)}
+                    className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
+                    <option className="text-black" value="">
+                      — Select a clinic —
+                    </option>
+                    {clinics.map((c) => (
+                      <option className="text-black" key={c._id} value={c._id}>
+                        {c.name} · {c.state}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={() => setShowClinicModal(true)}
+                  disabled={clinicSaving || !selectedClinic}
+                  className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+                >
+                  {clinicSaving ? "Saving..." : "Save Clinic"}
+                </button>
+              </>
             )}
           </div>
+        )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <input
-                type={showPasswords.confirm ? "text" : "password"}
-                value={passwordForm.confirmPassword}
-                onChange={(e) =>
-                  setPasswordForm({
-                    ...passwordForm,
-                    confirmPassword: e.target.value,
-                  })
-                }
-                className={`w-full border rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  passwordForm.confirmPassword &&
-                  passwordForm.newPassword !== passwordForm.confirmPassword
-                    ? "border-red-300"
-                    : "border-gray-300"
-                }`}
-                placeholder="Repeat new password"
-              />
-              <button
-                type="button"
-                onClick={() =>
-                  setShowPasswords((p) => ({ ...p, confirm: !p.confirm }))
-                }
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
-              >
-                {showPasswords.confirm ? "Hide" : "Show"}
-              </button>
+        {/* PREFERRED DOCTOR (PATIENTS ONLY) */}
+        {role === "patient" && profile?.clinicId && (
+          <div className="bg-white border border-gray-200 rounded-lg p-6">
+            <h3 className="text-base font-semibold text-gray-700 mb-4">
+              Preferred Doctor
+            </h3>
+
+            {doctorMessage && (
+              <p className="text-green-600 text-sm mb-3">{doctorMessage}</p>
+            )}
+            {doctorError && (
+              <p className="text-red-500 text-sm mb-3">{doctorError}</p>
+            )}
+
+            {doctors.length === 0 ? (
+              <p className="text-sm text-gray-400">
+                No doctors available at your current clinic.
+              </p>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Select a doctor
+                  </label>
+                  <select
+                    value={preferredDoctor}
+                    onChange={(e) => {
+                      setPendingDoctorValue(e.target.value);
+                    }}
+                    className="text-black w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                  >
+                    <option className="text-black" value="">
+                      — No preferred doctor —
+                    </option>
+                    {doctors.map((d) => (
+                      <option className="text-black" key={d._id} value={d._id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <button
+                  onClick={() => setShowDoctorModal(true)}
+                  disabled={
+                    doctorSaving || pendingDoctorValue === preferredDoctor
+                  }
+                  className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+                >
+                  {doctorSaving ? "Saving..." : "Save Preferred Doctor"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
+
+        {/* ── PASSWORD CHANGE SECTION ─────────────── */}
+        <div className="bg-white border border-gray-200 rounded-lg p-6">
+          <h3 className="text-base font-semibold text-gray-700 mb-1">
+            Change Password
+          </h3>
+          <p className="text-xs text-gray-400 mb-4">
+            You must enter your current password to set a new one.
+          </p>
+
+          {passwordMessage && (
+            <p className="text-green-600 text-sm mb-3">{passwordMessage}</p>
+          )}
+          {passwordError && (
+            <p className="text-red-500 text-sm mb-3">{passwordError}</p>
+          )}
+
+          <div className="flex flex-col gap-4">
+            {/* Current password */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Current Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.current ? "text" : "password"}
+                  value={passwordForm.currentPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      currentPassword: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter current password"
+                />
+                {/*Toggle password visibility button */}
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPasswords((p) => ({ ...p, current: !p.current }))
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+                >
+                  {showPasswords.current ? "Hide" : "Show"}
+                </button>
+              </div>
             </div>
 
-            {/* Live match indicator */}
-            {passwordForm.confirmPassword && (
-              <p
-                className={`text-xs mt-1 ${
-                  passwordForm.newPassword === passwordForm.confirmPassword
-                    ? "text-green-600"
-                    : "text-red-500"
-                }`}
-              >
-                {passwordForm.newPassword === passwordForm.confirmPassword
-                  ? "✓ Passwords match"
-                  : "✗ Passwords do not match"}
-              </p>
-            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.new ? "text" : "password"}
+                  value={passwordForm.newPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      newPassword: e.target.value,
+                    })
+                  }
+                  className="w-full border border-gray-300 rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Minimum 6 characters"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPasswords((p) => ({ ...p, new: !p.new }))
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+                >
+                  {showPasswords.new ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              {/* Password strength bar */}
+              {passwordForm.newPassword && (
+                <div className="mt-2">
+                  <div className="h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-300 ${strength.color}`}
+                      style={{ width: strength.width }}
+                    />
+                  </div>
+                  <p
+                    className={`text-xs mt-1 ${
+                      strength.label === "Strong"
+                        ? "text-green-600"
+                        : strength.label === "Fair"
+                          ? "text-yellow-600"
+                          : "text-red-500"
+                    }`}
+                  >
+                    {strength.label}
+                  </p>
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPasswords.confirm ? "text" : "password"}
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) =>
+                    setPasswordForm({
+                      ...passwordForm,
+                      confirmPassword: e.target.value,
+                    })
+                  }
+                  className={`w-full border rounded px-3 py-2 text-sm text-black pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                    passwordForm.confirmPassword &&
+                    passwordForm.newPassword !== passwordForm.confirmPassword
+                      ? "border-red-300"
+                      : "border-gray-300"
+                  }`}
+                  placeholder="Repeat new password"
+                />
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPasswords((p) => ({ ...p, confirm: !p.confirm }))
+                  }
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-xs"
+                >
+                  {showPasswords.confirm ? "Hide" : "Show"}
+                </button>
+              </div>
+
+              {/* Live match indicator */}
+              {passwordForm.confirmPassword && (
+                <p
+                  className={`text-xs mt-1 ${
+                    passwordForm.newPassword === passwordForm.confirmPassword
+                      ? "text-green-600"
+                      : "text-red-500"
+                  }`}
+                >
+                  {passwordForm.newPassword === passwordForm.confirmPassword
+                    ? "✓ Passwords match"
+                    : "✗ Passwords do not match"}
+                </p>
+              )}
+            </div>
+
+            <button
+              onClick={() => {
+                if (
+                  !passwordForm.currentPassword ||
+                  !passwordForm.newPassword ||
+                  !passwordForm.confirmPassword
+                ) {
+                  setPasswordError("Please fill in all password fields");
+                  return;
+                }
+                if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+                  setPasswordError("New passwords do not match");
+                  return;
+                }
+                if (passwordForm.newPassword.length < 6) {
+                  setPasswordError(
+                    "New password must be at least 6 characters",
+                  );
+                  return;
+                }
+                setPasswordError("");
+                setShowPasswordModal(true);
+              }}
+              disabled={passwordSaving}
+              className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+            >
+              {passwordSaving ? "Updating..." : "Update Password"}
+            </button>
           </div>
-
-          <button
-            onClick={() => {
-              if (
-                !passwordForm.currentPassword ||
-                !passwordForm.newPassword ||
-                !passwordForm.confirmPassword
-              ) {
-                setPasswordError("Please fill in all password fields");
-                return;
-              }
-              if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-                setPasswordError("New passwords do not match");
-                return;
-              }
-              if (passwordForm.newPassword.length < 6) {
-                setPasswordError("New password must be at least 6 characters");
-                return;
-              }
-              setPasswordError("");
-              setShowPasswordModal(true);
-            }}
-            disabled={passwordSaving}
-            className="w-full bg-blue-600 text-white py-2 rounded text-sm font-medium hover:bg-blue-700 disabled:opacity-50 transition"
-          >
-            {passwordSaving ? "Updating..." : "Update Password"}
-          </button>
         </div>
+
+        {/* Password change confirm modal */}
+        {showPasswordModal && (
+          <ConfirmModal
+            title="Change Password"
+            message="Are you sure you want to update your password? You will need to use your new password next time you log in."
+            confirmText="Yes, Update Password"
+            onConfirm={confirmPasswordChange}
+            onCancel={() => setShowPasswordModal(false)}
+          />
+        )}
+
+        {showClinicModal && (
+          <ConfirmModal
+            title="Set Your Clinic"
+            message={
+              role === "doctor" || role === "receptionist"
+                ? "You cannot change your clinic after setting it. Are you sure you want to proceed?"
+                : "Are you sure you want to set this as your clinic?"
+            }
+            confirmText="Yes, Set Clinic"
+            onConfirm={confirmClinicSave}
+            onCancel={() => setShowClinicModal(false)}
+          />
+        )}
+        {/**  CONFIRM MODALS */}
+        {showDoctorModal && (
+          <ConfirmModal
+            title={
+              pendingDoctorValue
+                ? "Update Preferred Doctor"
+                : "Remove Preferred Doctor"
+            }
+            message={
+              pendingDoctorValue
+                ? "Are you sure you want to update your preferred doctor? This will pre-fill the doctor field when you book appointments."
+                : "Are you sure you want to remove your preferred doctor?"
+            }
+            confirmText="Confirm"
+            onConfirm={confirmDoctorSave}
+            onCancel={() => setShowDoctorModal(false)}
+          />
+        )}
       </div>
-
-      {/* Password change confirm modal */}
-      {showPasswordModal && (
-        <ConfirmModal
-          title="Change Password"
-          message="Are you sure you want to update your password? You will need to use your new password next time you log in."
-          confirmText="Yes, Update Password"
-          onConfirm={confirmPasswordChange}
-          onCancel={() => setShowPasswordModal(false)}
-        />
-      )}
-
-      {showClinicModal && (
-        <ConfirmModal
-          title="Set Your Clinic"
-          message={
-            role === "doctor" || role === "receptionist"
-              ? "You cannot change your clinic after setting it. Are you sure you want to proceed?"
-              : "Are you sure you want to set this as your clinic?"
-          }
-          confirmText="Yes, Set Clinic"
-          onConfirm={confirmClinicSave}
-          onCancel={() => setShowClinicModal(false)}
-        />
-      )}
-      {/**  CONFIRM MODALS */}
-      {showDoctorModal && (
-        <ConfirmModal
-          title={
-            pendingDoctorValue
-              ? "Update Preferred Doctor"
-              : "Remove Preferred Doctor"
-          }
-          message={
-            pendingDoctorValue
-              ? "Are you sure you want to update your preferred doctor? This will pre-fill the doctor field when you book appointments."
-              : "Are you sure you want to remove your preferred doctor?"
-          }
-          confirmText="Confirm"
-          onConfirm={confirmDoctorSave}
-          onCancel={() => setShowDoctorModal(false)}
-        />
-      )}
-    </div>
+    </PageWrapper>
   );
 }
