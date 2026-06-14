@@ -16,6 +16,7 @@ export default function SignupPage() {
     confirm: "",
     phone: "",
     role: "patient" as "patient" | "doctor" | "admin" | "receptionist",
+    inviteCode: "",
   });
 
   const [error, setError] = useState("");
