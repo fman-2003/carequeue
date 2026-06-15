@@ -367,14 +367,14 @@ export default function AppointmentsPage() {
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
+        
         <p className="text-gray-500">Loading appointments...</p>
       </PageWrapper>
     );
   if (error && appointments.length !== 0)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
+        
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -394,7 +394,7 @@ export default function AppointmentsPage() {
         <PageTour tourId={`${role}-appointments`} steps={tourSteps} />
       )}
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
+        
         {(role === "doctor" || role === "receptionist") && (
           <Link
             href="/dashboard/appointments/new"
@@ -568,13 +568,10 @@ export default function AppointmentsPage() {
   if (role === "patient") return content;
 
   return (
-    <>
-      {!clinicId && (
-        <h2 className="text-xl font-bold text-gray-800">Appointments</h2>
-      )}
+    <PageWrapper>
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         {content}
       </ClinicGuard>
-    </>
+    </PageWrapper>
   );
 }

@@ -70,9 +70,7 @@ export default function MyRecordsPage() {
 
   if (loading) return (
     <PageWrapper>
-      <h2 className="text-xl font-bold text-gray-800 mb-2">
-        My Health Records
-      </h2>
+     
       <p className="text-gray-500">Loading your records...</p>
     </PageWrapper>
   );
@@ -83,9 +81,7 @@ export default function MyRecordsPage() {
         tourId="patient-my-records"
         steps={TOURS.patient["my-records"]}
       />
-      <h2 className="text-xl font-bold text-gray-800 mb-2">
-        My Health Records
-      </h2>
+      
       <p className="text-sm text-gray-500 mb-4">
         Visit summaries from your appointments including prescriptions, lab
         tests, and follow-up details.

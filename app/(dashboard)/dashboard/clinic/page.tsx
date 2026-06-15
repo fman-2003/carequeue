@@ -152,7 +152,6 @@ export default function CreateClinicPage() {
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-neutral-800 mb-6">My Clinic</h2>
         <p className="text-neutral-500">Loading...</p>
       </PageWrapper>
     );
@@ -161,7 +160,6 @@ export default function CreateClinicPage() {
     return (
       <PageWrapper>
         <div className="max-w-lg">
-          <h2 className="text-xl font-bold text-neutral-800 mb-6">My Clinic</h2>
           <div className="bg-white border border-neutral-200 rounded-xl p-6 flex flex-col gap-3 text-sm">
             <div>
               <p className="text-xs text-neutral-400 uppercase tracking-wide">

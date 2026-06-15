@@ -125,7 +125,7 @@ export default function HealthProfilePage() {
 
   if (loading) return;
   <PageWrapper>
-    <h2 className="text-xl font-bold text-gray-800 mb-2">My Health Profile</h2>
+    
     <p className="text-gray-500">Loading health profile...</p>
   </PageWrapper>;
 
@@ -133,9 +133,6 @@ export default function HealthProfilePage() {
     <PageWrapper>
       <div className="max-w-2xl">
         <PageTour tourId="patient-health" steps={TOURS.patient.health} />
-        <h2 className="text-xl font-bold text-gray-800 mb-2">
-          My Health Profile
-        </h2>
         <p className="text-sm text-gray-500 mb-6">
           This information helps your doctor provide better care. Only your
           doctor and clinic can see this.

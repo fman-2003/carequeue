@@ -4,6 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
 import { getToken } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
@@ -45,20 +46,19 @@ export default function NewAppointmentPage() {
 
   if (role === "patient" && !clinicId) {
     return (
-      <>
-      <h2 className="text-xl font-bold text-gray-800 mb-6">Book Appointment</h2>
-      <div className="flex flex-col items-center justify-center h-64 gap-4">
-        <p className="text-gray-500 text-sm text-center max-w-sm">
-          You need to set a clinic in settings before booking an appointment.
-        </p>
-        <Link
-          href="/dashboard/settings"
-          className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
-        >
-          Go to Settings →
-        </Link>
-      </div>
-      </>
+      <PageWrapper>
+        <div className="flex flex-col items-center justify-center h-64 gap-4">
+          <p className="text-gray-500 text-sm text-center max-w-sm">
+            You need to set a clinic in settings before booking an appointment.
+          </p>
+          <Link
+            href="/dashboard/settings"
+            className="text-sm bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
+          >
+            Go to Settings →
+          </Link>
+        </div>
+      </PageWrapper>
     );
   }
 
@@ -175,172 +175,180 @@ export default function NewAppointmentPage() {
 
   const availableSlots = slots.filter((s) => s.available);
 
-  // input className for black text on inputs
   const inputClass =
     "w-full border border-gray-300 rounded px-3 py-2 text-sm text-black";
 
   return (
     <PageWrapper>
-    <div className="max-w-lg">
-      <h2 className="text-xl font-bold text-gray-800 mb-6">Book Appointment</h2>
-
-      <ClinicGuard hasClinic={!!clinicId} role={role}>
-        {error && clinicId ? (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        ) : null}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4"
-        >
-          {(role === "doctor" || role === "receptionist") && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Patient
-              </label>
-              <select
-                value={form.patientId}
-                onChange={(e) =>
-                  setForm({ ...form, patientId: e.target.value })
-                }
-                className={inputClass}
-                required
-              >
-                <option value="">Select patient</option>
-                {patients.map((p) => (
-                  <option key={p._id} value={p._id}>
-                    {p.name}
-                  </option>
-                ))}
-              </select>
+      <div className="max-w-lg">
+        <ClinicGuard hasClinic={!!clinicId} role={role}>
+          <button
+            onClick={() => router.back()}
+            className="w-9 h-9 hover:text-neutral-500 flex items-center justify-center transition-colors"
+          >
+            <ArrowBackOutlinedIcon
+              sx={{ fontSize: 20, color: "var(--color-text-neutral)" }}
+            />{" "}
+            Back
+          </button>
+          {error && clinicId ? (
+            <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
+              {error}
             </div>
-          )}
-
-          {role !== "doctor" && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Doctor
-                {role === "patient" && preferredDoctorId && (
-                  <span className="ml-2 text-xs text-blue-500 font-normal">
-                    (preferred doctor)
-                  </span>
-                )}
-              </label>
-
-              {role === "patient" && preferredDoctorId ? (
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={preferredDoctorName}
-                    disabled
-                    className="w-full border border-gray-200 bg-gray-50 rounded px-3 py-2 text-sm text-black cursor-not-allowed"
-                  />
-                  <p className="text-xs text-gray-400 mt-1">
-                    To change your doctor,{" "}
-                    <Link
-                      href="/dashboard/settings"
-                      className="text-blue-500 hover:underline"
-                    >
-                      update your settings
-                    </Link>
-                    .
-                  </p>
-                </div>
-              ) : (
+          ) : null}
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white border border-gray-200 rounded-lg p-6 flex flex-col gap-4"
+          >
+            {(role === "doctor" || role === "receptionist") && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Patient
+                </label>
                 <select
-                  value={form.doctorId}
+                  value={form.patientId}
                   onChange={(e) =>
-                    setForm({ ...form, doctorId: e.target.value })
+                    setForm({ ...form, patientId: e.target.value })
                   }
                   className={inputClass}
                   required
                 >
-                  <option value="">Select doctor</option>
-                  {doctors.map((d) => (
-                    <option key={d._id} value={d._id}>
-                      {d.name}
+                  <option value="">Select patient</option>
+                  {patients.map((p) => (
+                    <option key={p._id} value={p._id}>
+                      {p.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {role !== "doctor" && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Doctor
+                  {role === "patient" && preferredDoctorId && (
+                    <span className="ml-2 text-xs text-blue-500 font-normal">
+                      (preferred doctor)
+                    </span>
+                  )}
+                </label>
+
+                {role === "patient" && preferredDoctorId ? (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={preferredDoctorName}
+                      disabled
+                      className="w-full border border-gray-200 bg-gray-50 rounded px-3 py-2 text-sm text-black cursor-not-allowed"
+                    />
+                    <p className="text-xs text-gray-400 mt-1">
+                      To change your doctor,{" "}
+                      <Link
+                        href="/dashboard/settings"
+                        className="text-blue-500 hover:underline"
+                      >
+                        update your settings
+                      </Link>
+                      .
+                    </p>
+                  </div>
+                ) : (
+                  <select
+                    value={form.doctorId}
+                    onChange={(e) =>
+                      setForm({ ...form, doctorId: e.target.value })
+                    }
+                    className={inputClass}
+                    required
+                  >
+                    <option value="">Select doctor</option>
+                    {doctors.map((d) => (
+                      <option key={d._id} value={d._id}>
+                        {d.name}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+            )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Date
+              </label>
+              <input
+                type="date"
+                value={form.date}
+                min={new Date().toISOString().split("T")[0]}
+                onChange={(e) => setForm({ ...form, date: e.target.value })}
+                className={inputClass}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Time Slot
+                {fetchingSlots && (
+                  <span className="ml-2 text-xs text-gray-400">
+                    Loading slots...
+                  </span>
+                )}
+              </label>
+
+              {form.doctorId &&
+                form.date &&
+                !fetchingSlots &&
+                availableSlots.length === 0 && (
+                  <p className="text-sm text-red-500">
+                    No available slots for this doctor on this date.
+                  </p>
+                )}
+
+              {availableSlots.length > 0 && (
+                <select
+                  value={form.timeSlot}
+                  onChange={(e) =>
+                    setForm({ ...form, timeSlot: e.target.value })
+                  }
+                  className={inputClass}
+                  required
+                >
+                  <option value="">Select a slot</option>
+                  {availableSlots.map((s) => (
+                    <option key={s.timeSlot} value={s.timeSlot}>
+                      {s.timeSlot}
                     </option>
                   ))}
                 </select>
               )}
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Date
-            </label>
-            <input
-              type="date"
-              value={form.date}
-              min={new Date().toISOString().split("T")[0]}
-              onChange={(e) => setForm({ ...form, date: e.target.value })}
-              className={inputClass}
-              required
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Time Slot
-              {fetchingSlots && (
-                <span className="ml-2 text-xs text-gray-400">
-                  Loading slots...
-                </span>
-              )}
-            </label>
-
-            {form.doctorId &&
-              form.date &&
-              !fetchingSlots &&
-              availableSlots.length === 0 && (
-                <p className="text-sm text-red-500">
-                  No available slots for this doctor on this date.
-                </p>
-              )}
-
-            {availableSlots.length > 0 && (
-              <select
-                value={form.timeSlot}
-                onChange={(e) => setForm({ ...form, timeSlot: e.target.value })}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Reason{" "}
+                <span className="text-gray-400 font-normal">(optional)</span>
+              </label>
+              <textarea
+                value={form.reason}
+                onChange={(e) => setForm({ ...form, reason: e.target.value })}
                 className={inputClass}
-                required
-              >
-                <option value="">Select a slot</option>
-                {availableSlots.map((s) => (
-                  <option key={s.timeSlot} value={s.timeSlot}>
-                    {s.timeSlot}
-                  </option>
-                ))}
-              </select>
-            )}
-          </div>
+                rows={3}
+                placeholder="Brief reason for visit"
+              />
+            </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Reason{" "}
-              <span className="text-gray-400 font-normal">(optional)</span>
-            </label>
-            <textarea
-              value={form.reason}
-              onChange={(e) => setForm({ ...form, reason: e.target.value })}
-              className={inputClass}
-              rows={3}
-              placeholder="Brief reason for visit"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading || !form.timeSlot}
-            className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50 transition"
-          >
-            {loading ? "Booking..." : "Book Appointment"}
-          </button>
-        </form>
-      </ClinicGuard>
-    </div>
+            <button
+              type="submit"
+              disabled={loading || !form.timeSlot}
+              className="w-full bg-blue-600 text-white py-2 rounded font-medium hover:bg-blue-700 disabled:opacity-50 transition"
+            >
+              {loading ? "Booking..." : "Book Appointment"}
+            </button>
+          </form>
+        </ClinicGuard>
+      </div>
     </PageWrapper>
   );
 }

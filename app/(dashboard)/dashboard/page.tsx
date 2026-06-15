@@ -71,9 +71,6 @@ function AdminOverview() {
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">
-          Clinic Overview
-        </h2>
         <p className="text-gray-500">Loading...</p>
       </PageWrapper>
     );
@@ -88,18 +85,12 @@ function AdminOverview() {
   if (analyticsLoading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">
-          Clinic Overview
-        </h2>
         <p className="text-gray-500">Loading analytics...</p>
       </PageWrapper>
     );
   if (error && clinicId)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">
-          Clinic Overview
-        </h2>
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -108,7 +99,7 @@ function AdminOverview() {
   return (
     <PageWrapper>
       <PageTour tourId="admin-dashboard" steps={TOURS.admin.dashboard} />
-      <h2 className="text-xl font-bold text-gray-800 mb-6">Clinic Overview</h2>
+
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
@@ -179,7 +170,6 @@ function DoctorOverview() {
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
         <p className="text-gray-500">Loading...</p>
       </PageWrapper>
     );
@@ -187,14 +177,12 @@ function DoctorOverview() {
   if (analyticsLoading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
         <p className="text-gray-500">Loading...</p>
       </PageWrapper>
     );
   if (error && clinicId)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -208,7 +196,7 @@ function DoctorOverview() {
     return (
       <PageWrapper>
         <PageTour tourId="doctor-dashboard" steps={TOURS.doctor.dashboard} />
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
+
         <div>
           <div className="grid grid-cols-3 gap-4 mb-6">
             <div className="bg-white rounded-lg border border-gray-200 p-5">
@@ -285,7 +273,7 @@ function DoctorOverview() {
   return (
     <PageWrapper>
       <PageTour tourId="doctor-dashboard" steps={TOURS.doctor.dashboard} />
-      <h2 className="text-xl font-bold text-gray-800 mb-6">My Schedule</h2>
+
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
           <div className="grid grid-cols-3 gap-4 mb-6">
@@ -396,7 +384,6 @@ function PatientOverview() {
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
         <p className="text-gray-500">Loading...</p>
       </PageWrapper>
     );
@@ -409,14 +396,12 @@ function PatientOverview() {
   if (analyticsLoading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
         <p className="text-gray-500">Loading...</p>
       </PageWrapper>
     );
   if (error && clinicId)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -425,7 +410,7 @@ function PatientOverview() {
   return (
     <PageWrapper>
       <PageTour tourId="patient-dashboard" steps={TOURS.patient.dashboard} />
-      <h2 className="text-xl font-bold text-gray-800 mb-6">My Dashboard</h2>
+
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">

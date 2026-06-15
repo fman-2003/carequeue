@@ -24,6 +24,5 @@ export const loginSchema = z.object({
     .min(6, "Invalid combination of email address and password"),
 });
 
-// inferred types to savE from writing duplicate typescript interfaces
 export type SignupInput = z.infer<typeof signupSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;

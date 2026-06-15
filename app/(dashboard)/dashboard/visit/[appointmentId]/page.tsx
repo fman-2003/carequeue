@@ -5,6 +5,7 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { getToken } from "@/lib/auth/getSession";
 import PageWrapper from "@/components/layout/PageWrapper";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
 export default function VisitRecordPage({
   params,
@@ -193,432 +194,441 @@ export default function VisitRecordPage({
 
   return (
     <PageWrapper>
-    <div className="max-w-2xl">
-      <div className="flex items-center gap-3 mb-6">
-        <button
-          onClick={() => router.back()}
-          className="text-sm text-neutral-500 hover:text-neutral-700"
-        >
-          ← Back
-        </button>
-        <div>
-          <h2 className="text-xl font-bold text-neutral-800">
-            {existing ? "Edit Visit Record" : "New Visit Record"}
-          </h2>
-          {appointment && (
-            <p className="text-sm text-neutral-500 mt-0.5">
-              {appointment.patientId?.name} ·{" "}
-              {new Date(appointment.date).toDateString()} ·{" "}
-              {appointment.timeSlot} ·{" "}
-              {appointment.clinicId?.name || "Unknown Clinic"}
-            </p>
-          )}
-        </div>
-      </div>
-
-      {/* patient profile summary for doc ref */}
-      {profile && (
-        <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
-          <p className="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-2">
-            Patient Health Summary
-          </p>
-          <div className="grid grid-cols-3 gap-3 text-xs text-primary-800">
-            <p>
-              <span className="font-medium">Blood Group:</span>{" "}
-              {profile.bloodGroup || "—"}
-            </p>
-            <p>
-              <span className="font-medium">Genotype:</span>{" "}
-              {profile.genotype || "—"}
-            </p>
-            <p>
-              <span className="font-medium">Weight:</span>{" "}
-              {profile.weight ? `${profile.weight}kg` : "—"}
-            </p>
+      <div className="max-w-2xl">
+        <div className="flex items-center gap-3 mb-6">
+          <button
+            onClick={() => router.back()}
+            className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors"
+          >
+            <ArrowBackOutlinedIcon
+              sx={{ fontSize: 20, color: "var(--color-text-secondary)" }}
+            />
+          </button>
+          <div>
+            <h2 className="text-xl font-bold text-neutral-800">
+              {existing ? "Edit Visit Record" : "New Visit Record"}
+            </h2>
+            {appointment && (
+              <p className="text-sm text-neutral-500 mt-0.5">
+                {appointment.patientId?.name} ·{" "}
+                {new Date(appointment.date).toDateString()} ·{" "}
+                {appointment.timeSlot} ·{" "}
+                {appointment.clinicId?.name || "Unknown Clinic"}
+              </p>
+            )}
           </div>
-          {profile.allergies?.length > 0 && (
-            <p className="text-xs text-red-700 mt-2">
-              ⚠️ <span className="font-medium">Allergies:</span>{" "}
-              {profile.allergies.join(", ")}
-            </p>
-          )}
-          {profile.chronicConditions?.length > 0 && (
-            <p className="text-xs text-orange-700 mt-1">
-              🏥 <span className="font-medium">Conditions:</span>{" "}
-              {profile.chronicConditions.join(", ")}
-            </p>
-          )}
         </div>
-      )}
 
-      {error && (
-        <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
-          {error}
-        </div>
-      )}
-      {success && (
-        <div className="bg-green-50 text-green-600 text-sm px-4 py-3 rounded mb-4">
-          {success}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-        <section className="bg-white border border-neutral-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-4">Vitals</h3>
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              {
-                label: "Blood Pressure (mmHg)",
-                key: "bloodPressure",
-                placeholder: "120/80",
-                type: "text",
-              },
-              {
-                label: "Temperature (°C)",
-                key: "temperature",
-                placeholder: "37.0",
-                type: "number",
-              },
-              {
-                label: "Pulse Rate (bpm)",
-                key: "pulseRate",
-                placeholder: "72",
-                type: "number",
-              },
-              {
-                label: "Respiratory Rate",
-                key: "respiratoryRate",
-                placeholder: "16",
-                type: "number",
-              },
-              {
-                label: "O₂ Saturation (%)",
-                key: "oxygenSaturation",
-                placeholder: "98",
-                type: "number",
-              },
-              {
-                label: "Weight (kg)",
-                key: "weight",
-                placeholder: "70",
-                type: "number",
-              },
-            ].map(({ label, key, placeholder, type }) => (
-              <div key={key}>
-                <label className={labelClass}>{label}</label>
-                <input
-                  type={type}
-                  value={(form.vitals as any)[key]}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      vitals: { ...form.vitals, [key]: e.target.value },
-                    })
-                  }
-                  className={inputClass}
-                  placeholder={placeholder}
-                />
-              </div>
-            ))}
-          </div>
-        </section>
-        <section className="bg-white border border-neutral-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
-            Clinical Notes
-          </h3>
-          <div className="flex flex-col gap-4">
-            <div>
-              <label className={labelClass}>
-                Chief Complaint <span className="text-red-500 text-sm">*</span>
-              </label>
-              <textarea
-                value={form.chiefComplaint}
-                onChange={(e) =>
-                  setForm({ ...form, chiefComplaint: e.target.value })
-                }
-                className={textareaClass}
-                rows={2}
-                placeholder="Patient's primary reason for visit in their own words"
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                Diagnosis <span className="text-red-500 text-sm">*</span>
-              </label>
-              <textarea
-                value={form.diagnosis}
-                onChange={(e) =>
-                  setForm({ ...form, diagnosis: e.target.value })
-                }
-                className={textareaClass}
-                rows={2}
-                placeholder="Doctor's diagnosis"
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                Clinical Notes <span className="text-red-500 text-sm">*</span>
-              </label>
-              <textarea
-                value={form.clinicalNotes}
-                onChange={(e) =>
-                  setForm({ ...form, clinicalNotes: e.target.value })
-                }
-                className={textareaClass}
-                rows={4}
-                placeholder="Detailed clinical observations and findings"
-                required
-              />
-            </div>
-            <div>
-              <label className={labelClass}>
-                Treatment Plan <span className="text-red-500 text-sm">*</span>
-              </label>
-              <textarea
-                value={form.treatmentPlan}
-                onChange={(e) =>
-                  setForm({ ...form, treatmentPlan: e.target.value })
-                }
-                className={textareaClass}
-                rows={3}
-                placeholder="Recommended treatment and next steps"
-                required
-              />
-            </div>
-          </div>
-        </section>
-        <section className="bg-white border border-neutral-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
-            Prescriptions
-          </h3>
-          {form.prescriptions.map((rx: any, i: number) => (
-            <div
-              key={i}
-              className="flex items-start justify-between bg-neutral-50 rounded p-3 mb-2"
-            >
-              <div>
-                <p className="text-sm font-medium text-neutral-800">
-                  {rx.medication}
-                </p>
-                <p className="text-xs text-neutral-500">
-                  {rx.dosage} · {rx.frequency} · {rx.duration}
-                </p>
-                {rx.instructions && (
-                  <p className="text-xs text-neutral-400">{rx.instructions}</p>
-                )}
-              </div>
-              <button
-                type="button"
-                onClick={() =>
-                  setForm({
-                    ...form,
-                    prescriptions: form.prescriptions.filter(
-                      (_, idx) => idx !== i,
-                    ),
-                  })
-                }
-                className="text-red-400 hover:text-red-600 text-sm ml-2"
-              >
-                Remove
-              </button>
-            </div>
-          ))}
-          <div className="border border-dashed border-neutral-300 rounded p-4 mt-2">
-            <p className="text-xs text-neutral-500 mb-3 font-medium">
-              Add Prescription
+        {/* patient profile summary for doc ref */}
+        {profile && (
+          <div className="bg-primary-50 border border-primary-200 rounded-lg p-4 mb-6">
+            <p className="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-2">
+              Patient Health Summary
             </p>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-3 gap-3 text-xs text-primary-800">
+              <p>
+                <span className="font-medium">Blood Group:</span>{" "}
+                {profile.bloodGroup || "—"}
+              </p>
+              <p>
+                <span className="font-medium">Genotype:</span>{" "}
+                {profile.genotype || "—"}
+              </p>
+              <p>
+                <span className="font-medium">Weight:</span>{" "}
+                {profile.weight ? `${profile.weight}kg` : "—"}
+              </p>
+            </div>
+            {profile.allergies?.length > 0 && (
+              <p className="text-xs text-red-700 mt-2">
+                ⚠️ <span className="font-medium">Allergies:</span>{" "}
+                {profile.allergies.join(", ")}
+              </p>
+            )}
+            {profile.chronicConditions?.length > 0 && (
+              <p className="text-xs text-orange-700 mt-1">
+                🏥 <span className="font-medium">Conditions:</span>{" "}
+                {profile.chronicConditions.join(", ")}
+              </p>
+            )}
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
+            {error}
+          </div>
+        )}
+        {success && (
+          <div className="bg-green-50 text-green-600 text-sm px-4 py-3 rounded mb-4">
+            {success}
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          <section className="bg-white border border-neutral-200 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-neutral-700 mb-4">
+              Vitals
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
               {[
                 {
-                  label: "Medication",
-                  key: "medication",
-                  placeholder: "e.g. Amoxicillin",
-                },
-                { label: "Dosage", key: "dosage", placeholder: "e.g. 500mg" },
-                {
-                  label: "Frequency",
-                  key: "frequency",
-                  placeholder: "e.g. Twice daily",
+                  label: "Blood Pressure (mmHg)",
+                  key: "bloodPressure",
+                  placeholder: "120/80",
+                  type: "text",
                 },
                 {
-                  label: "Duration",
-                  key: "duration",
-                  placeholder: "e.g. 7 days",
+                  label: "Temperature (°C)",
+                  key: "temperature",
+                  placeholder: "37.0",
+                  type: "number",
                 },
-              ].map(({ label, key, placeholder }) => (
+                {
+                  label: "Pulse Rate (bpm)",
+                  key: "pulseRate",
+                  placeholder: "72",
+                  type: "number",
+                },
+                {
+                  label: "Respiratory Rate",
+                  key: "respiratoryRate",
+                  placeholder: "16",
+                  type: "number",
+                },
+                {
+                  label: "O₂ Saturation (%)",
+                  key: "oxygenSaturation",
+                  placeholder: "98",
+                  type: "number",
+                },
+                {
+                  label: "Weight (kg)",
+                  key: "weight",
+                  placeholder: "70",
+                  type: "number",
+                },
+              ].map(({ label, key, placeholder, type }) => (
                 <div key={key}>
-                  <label className="block text-xs text-neutral-600 mb-1">
-                    {label}
-                  </label>
+                  <label className={labelClass}>{label}</label>
                   <input
-                    type="text"
-                    value={(newRx as any)[key]}
+                    type={type}
+                    value={(form.vitals as any)[key]}
                     onChange={(e) =>
-                      setNewRx({ ...newRx, [key]: e.target.value })
+                      setForm({
+                        ...form,
+                        vitals: { ...form.vitals, [key]: e.target.value },
+                      })
                     }
                     className={inputClass}
                     placeholder={placeholder}
                   />
                 </div>
               ))}
-              <div className="col-span-2">
-                <label className="block text-xs text-neutral-600 mb-1">
-                  Instructions (optional)
+            </div>
+          </section>
+          <section className="bg-white border border-neutral-200 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-neutral-700 mb-4">
+              Clinical Notes
+            </h3>
+            <div className="flex flex-col gap-4">
+              <div>
+                <label className={labelClass}>
+                  Chief Complaint{" "}
+                  <span className="text-red-500 text-sm">*</span>
                 </label>
-                <input
-                  type="text"
-                  value={newRx.instructions}
+                <textarea
+                  value={form.chiefComplaint}
                   onChange={(e) =>
-                    setNewRx({ ...newRx, instructions: e.target.value })
+                    setForm({ ...form, chiefComplaint: e.target.value })
                   }
-                  className={inputClass}
-                  placeholder="e.g. Take after meals"
+                  className={textareaClass}
+                  rows={2}
+                  placeholder="Patient's primary reason for visit in their own words"
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>
+                  Diagnosis <span className="text-red-500 text-sm">*</span>
+                </label>
+                <textarea
+                  value={form.diagnosis}
+                  onChange={(e) =>
+                    setForm({ ...form, diagnosis: e.target.value })
+                  }
+                  className={textareaClass}
+                  rows={2}
+                  placeholder="Doctor's diagnosis"
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>
+                  Clinical Notes <span className="text-red-500 text-sm">*</span>
+                </label>
+                <textarea
+                  value={form.clinicalNotes}
+                  onChange={(e) =>
+                    setForm({ ...form, clinicalNotes: e.target.value })
+                  }
+                  className={textareaClass}
+                  rows={4}
+                  placeholder="Detailed clinical observations and findings"
+                  required
+                />
+              </div>
+              <div>
+                <label className={labelClass}>
+                  Treatment Plan <span className="text-red-500 text-sm">*</span>
+                </label>
+                <textarea
+                  value={form.treatmentPlan}
+                  onChange={(e) =>
+                    setForm({ ...form, treatmentPlan: e.target.value })
+                  }
+                  className={textareaClass}
+                  rows={3}
+                  placeholder="Recommended treatment and next steps"
+                  required
                 />
               </div>
             </div>
-            <button
-              type="button"
-              onClick={() => {
-                if (
-                  !newRx.medication ||
-                  !newRx.dosage ||
-                  !newRx.frequency ||
-                  !newRx.duration
-                )
-                  return;
-                setForm({
-                  ...form,
-                  prescriptions: [...form.prescriptions, { ...newRx }],
-                });
-                setNewRx({
-                  medication: "",
-                  dosage: "",
-                  frequency: "",
-                  duration: "",
-                  instructions: "",
-                });
-              }}
-              className="mt-3 text-sm bg-primary-600 text-white px-4 py-1.5 rounded hover:bg-primary-700 transition"
-            >
-              + Add Prescription
-            </button>
-          </div>
-        </section>
-        <section className="bg-white border border-neutral-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
-            Lab Tests Ordered
-          </h3>
-          <div className="flex gap-2 mb-3">
-            <input
-              type="text"
-              value={newLab}
-              onChange={(e) => setNewLab(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
+          </section>
+          <section className="bg-white border border-neutral-200 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-neutral-700 mb-4">
+              Prescriptions
+            </h3>
+            {form.prescriptions.map((rx: any, i: number) => (
+              <div
+                key={i}
+                className="flex items-start justify-between bg-neutral-50 rounded p-3 mb-2"
+              >
+                <div>
+                  <p className="text-sm font-medium text-neutral-800">
+                    {rx.medication}
+                  </p>
+                  <p className="text-xs text-neutral-500">
+                    {rx.dosage} · {rx.frequency} · {rx.duration}
+                  </p>
+                  {rx.instructions && (
+                    <p className="text-xs text-neutral-400">
+                      {rx.instructions}
+                    </p>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setForm({
+                      ...form,
+                      prescriptions: form.prescriptions.filter(
+                        (_, idx) => idx !== i,
+                      ),
+                    })
+                  }
+                  className="text-red-400 hover:text-red-600 text-sm ml-2"
+                >
+                  Remove
+                </button>
+              </div>
+            ))}
+            <div className="border border-dashed border-neutral-300 rounded p-4 mt-2">
+              <p className="text-xs text-neutral-500 mb-3 font-medium">
+                Add Prescription
+              </p>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  {
+                    label: "Medication",
+                    key: "medication",
+                    placeholder: "e.g. Amoxicillin",
+                  },
+                  { label: "Dosage", key: "dosage", placeholder: "e.g. 500mg" },
+                  {
+                    label: "Frequency",
+                    key: "frequency",
+                    placeholder: "e.g. Twice daily",
+                  },
+                  {
+                    label: "Duration",
+                    key: "duration",
+                    placeholder: "e.g. 7 days",
+                  },
+                ].map(({ label, key, placeholder }) => (
+                  <div key={key}>
+                    <label className="block text-xs text-neutral-600 mb-1">
+                      {label}
+                    </label>
+                    <input
+                      type="text"
+                      value={(newRx as any)[key]}
+                      onChange={(e) =>
+                        setNewRx({ ...newRx, [key]: e.target.value })
+                      }
+                      className={inputClass}
+                      placeholder={placeholder}
+                    />
+                  </div>
+                ))}
+                <div className="col-span-2">
+                  <label className="block text-xs text-neutral-600 mb-1">
+                    Instructions (optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={newRx.instructions}
+                    onChange={(e) =>
+                      setNewRx({ ...newRx, instructions: e.target.value })
+                    }
+                    className={inputClass}
+                    placeholder="e.g. Take after meals"
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  if (
+                    !newRx.medication ||
+                    !newRx.dosage ||
+                    !newRx.frequency ||
+                    !newRx.duration
+                  )
+                    return;
+                  setForm({
+                    ...form,
+                    prescriptions: [...form.prescriptions, { ...newRx }],
+                  });
+                  setNewRx({
+                    medication: "",
+                    dosage: "",
+                    frequency: "",
+                    duration: "",
+                    instructions: "",
+                  });
+                }}
+                className="mt-3 text-sm bg-primary-600 text-white px-4 py-1.5 rounded hover:bg-primary-700 transition"
+              >
+                + Add Prescription
+              </button>
+            </div>
+          </section>
+          <section className="bg-white border border-neutral-200 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-neutral-700 mb-4">
+              Lab Tests Ordered
+            </h3>
+            <div className="flex gap-2 mb-3">
+              <input
+                type="text"
+                value={newLab}
+                onChange={(e) => setNewLab(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    if (!newLab.trim()) return;
+                    setForm({
+                      ...form,
+                      labTestsOrdered: [...form.labTestsOrdered, newLab.trim()],
+                    });
+                    setNewLab("");
+                  }
+                }}
+                className={inputClass}
+                placeholder="e.g. Full Blood Count — press Enter to add"
+              />
+              <button
+                type="button"
+                onClick={() => {
                   if (!newLab.trim()) return;
                   setForm({
                     ...form,
                     labTestsOrdered: [...form.labTestsOrdered, newLab.trim()],
                   });
                   setNewLab("");
-                }
-              }}
-              className={inputClass}
-              placeholder="e.g. Full Blood Count — press Enter to add"
-            />
-            <button
-              type="button"
-              onClick={() => {
-                if (!newLab.trim()) return;
-                setForm({
-                  ...form,
-                  labTestsOrdered: [...form.labTestsOrdered, newLab.trim()],
-                });
-                setNewLab("");
-              }}
-              className="px-3 py-2 bg-primary-600 text-white rounded text-sm hover:bg-primary-700"
-            >
-              Add
-            </button>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {form.labTestsOrdered.map((lab: string, i: number) => (
-              <span
-                key={i}
-                className="flex items-center gap-1 bg-primary-50 text-primary-700 text-xs px-2 py-1 rounded-full"
+                }}
+                className="px-3 py-2 bg-primary-600 text-white rounded text-sm hover:bg-primary-700"
               >
-                {lab}
-                <button
-                  type="button"
-                  onClick={() =>
-                    setForm({
-                      ...form,
-                      labTestsOrdered: form.labTestsOrdered.filter(
-                        (_, idx) => idx !== i,
-                      ),
-                    })
-                  }
-                  className="hover:text-primary-900"
+                Add
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {form.labTestsOrdered.map((lab: string, i: number) => (
+                <span
+                  key={i}
+                  className="flex items-center gap-1 bg-primary-50 text-primary-700 text-xs px-2 py-1 rounded-full"
                 >
-                  ✕
-                </button>
-              </span>
-            ))}
-          </div>
-        </section>
-
-        <section className="bg-white border border-neutral-200 rounded-lg p-5">
-          <h3 className="text-sm font-semibold text-neutral-700 mb-4">
-            Follow Up & Referral
-          </h3>
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className={labelClass}>Follow-Up Date</label>
-              <input
-                type="date"
-                value={form.followUpDate}
-                onChange={(e) =>
-                  setForm({ ...form, followUpDate: e.target.value })
-                }
-                className={inputClass}
-                min={new Date().toISOString().split("T")[0]}
-              />
+                  {lab}
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setForm({
+                        ...form,
+                        labTestsOrdered: form.labTestsOrdered.filter(
+                          (_, idx) => idx !== i,
+                        ),
+                      })
+                    }
+                    className="hover:text-primary-900"
+                  >
+                    ✕
+                  </button>
+                </span>
+              ))}
             </div>
-            <div>
-              <label className={labelClass}>Referral</label>
-              <input
-                type="text"
-                value={form.referral}
-                onChange={(e) => setForm({ ...form, referral: e.target.value })}
-                className={inputClass}
-                placeholder="e.g. Referred to Cardiologist"
-              />
-            </div>
-          </div>
-        </section>
+          </section>
 
-        <button
-          type="submit"
-          disabled={
-            saving ||
-            !form.chiefComplaint ||
-            !form.diagnosis ||
-            !form.clinicalNotes ||
-            !form.treatmentPlan
-          }
-          className="w-full bg-primary-600 text-white py-2.5 rounded font-medium hover:bg-primary-700 disabled:opacity-50 transition"
-        >
-          {saving
-            ? "Saving..."
-            : existing
-              ? "Update Visit Record"
-              : "Save Visit Record"}
-        </button>
-      </form>
-    </div>
+          <section className="bg-white border border-neutral-200 rounded-lg p-5">
+            <h3 className="text-sm font-semibold text-neutral-700 mb-4">
+              Follow Up & Referral
+            </h3>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className={labelClass}>Follow-Up Date</label>
+                <input
+                  type="date"
+                  value={form.followUpDate}
+                  onChange={(e) =>
+                    setForm({ ...form, followUpDate: e.target.value })
+                  }
+                  className={inputClass}
+                  min={new Date().toISOString().split("T")[0]}
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Referral</label>
+                <input
+                  type="text"
+                  value={form.referral}
+                  onChange={(e) =>
+                    setForm({ ...form, referral: e.target.value })
+                  }
+                  className={inputClass}
+                  placeholder="e.g. Referred to Cardiologist"
+                />
+              </div>
+            </div>
+          </section>
+
+          <button
+            type="submit"
+            disabled={
+              saving ||
+              !form.chiefComplaint ||
+              !form.diagnosis ||
+              !form.clinicalNotes ||
+              !form.treatmentPlan
+            }
+            className="w-full bg-primary-600 text-white py-2.5 rounded font-medium hover:bg-primary-700 disabled:opacity-50 transition"
+          >
+            {saving
+              ? "Saving..."
+              : existing
+                ? "Update Visit Record"
+                : "Save Visit Record"}
+          </button>
+        </form>
+      </div>
     </PageWrapper>
   );
 }

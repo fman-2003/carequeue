@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
 import Image from "next/image";
 import { saveToken } from "@/lib/auth/getSession";
@@ -84,6 +85,15 @@ export default function SignupPage() {
         className="w-1/2 min-h-screen"
       />
       <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card px-8 py-4">
+        <button
+          onClick={() => router.back()}
+          className="w-9 h-9 hover:text-neutral-500 flex items-center justify-center transition-colors"
+        >
+          <ArrowBackOutlinedIcon
+            sx={{ fontSize: 20, color: "var(--color-text-neutral)" }}
+          />{" "}
+          Back
+        </button>
         <h1 className="text-2xl font-bold text-neutral-800 mb-1">CareQueue</h1>
         <p className="text-neutral-500 text-sm mb-6">Create your account</p>
 
