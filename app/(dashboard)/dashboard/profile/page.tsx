@@ -44,7 +44,7 @@ export default function ProfilePage() {
             phone: data.user.phone || "",
           });
           if (data.user.profilePicture) {
-            setPreviewUrl(data.user.profilePicture);
+            setPreviewUrl(`${data.user.profilePicture}?t=${Date.now()}`);
           }
         }
       })
