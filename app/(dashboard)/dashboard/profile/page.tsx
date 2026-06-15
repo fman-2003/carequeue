@@ -78,8 +78,12 @@ export default function ProfilePage() {
         return;
       }
 
+      URL.revokeObjectURL(objectUrl);
+
+      const freshUrl = `${data.user.profilePicture}?t=${Date.now()}`;
+
       setProfile(data.user);
-      setPreviewUrl(data.user.profilePicture);
+      setPreviewUrl(freshUrl);
       setMessage("Profile picture updated ✅");
     } catch {
       setError("Upload failed");
@@ -148,7 +152,6 @@ export default function ProfilePage() {
             Back
           </button>
           <div>
-            <h2 className="page-title">My Profile</h2>
             <p className="page-subtitle">
               Update your profile information and profile picture.
             </p>

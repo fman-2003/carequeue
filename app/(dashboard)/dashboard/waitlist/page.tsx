@@ -266,14 +266,12 @@ export default function WaitlistPage() {
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800">My Waitlist</h2>
         <p className="text-gray-500">Loading waitlist...</p>
       </PageWrapper>
     );
   if (error)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800">My Waitlist</h2>
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -282,8 +280,6 @@ export default function WaitlistPage() {
     <PageWrapper>
       <PageTour tourId="patient-waitlist" steps={TOURS.patient.waitlist} />
       <div className="flex items-center justify-between mb-2">
-        <h2 className="text-xl font-bold text-gray-800">My Waitlist</h2>
-
         <button
           onClick={handleOpenModal}
           className="bg-blue-600 text-white text-sm px-4 py-2 rounded hover:bg-blue-700 transition"

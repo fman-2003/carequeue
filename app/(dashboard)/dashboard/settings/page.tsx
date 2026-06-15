@@ -203,10 +203,6 @@ export default function SettingsPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        /**
-         * Error can be a field error object or a plain string.
-         * Handle both cases cleanly.
-         */
         if (typeof data.error === "object") {
           const messages = Object.values(data.error).flat().join(". ");
           setPasswordError(messages);
@@ -259,19 +255,19 @@ export default function SettingsPage() {
 
   const strength = getPasswordStrength(passwordForm.newPassword);
 
-  if (loading) return <PageWrapper>
-  <h2 className="text-xl font-bold text-gray-800">Settings</h2>
-   <p className="text-gray-500">Loading settings...</p>
-  </PageWrapper>;
+  if (loading)
+    return (
+      <PageWrapper>
+        <p className="text-gray-500">Loading...</p>
+      </PageWrapper>
+    );
 
   const doctorAlreadySet =
-    profile?.clinicId && (role === "doctor" || role === "receptionist");
+    profile?.clinicId && (role === "patient" || role === "receptionist");
 
   return (
     <PageWrapper>
       <div className="max-w-lg flex flex-col gap-6">
-        <h2 className="text-xl font-bold text-gray-800">Settings</h2>
-
         {role !== "admin" && (
           <div className="bg-white border border-gray-200 rounded-lg p-6">
             <h3 className="text-base font-semibold text-gray-700 mb-1">
