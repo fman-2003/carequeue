@@ -7,8 +7,6 @@ import Link from "next/link";
 import { isAuthenticated, clearToken, getToken } from "@/lib/auth/getSession";
 import AISchedulingPanel from "@/components/layout/AISchedulingPanel";
 import AppBar from "@/components/layout/AppBar";
-
-// MUI Icons
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutlined";
@@ -43,7 +41,7 @@ function getNameFromToken(): string {
   const token = getToken();
   if (!token) return "";
   try {
-    return JSON.parse(atob(token.split(".")[1])).name || "";
+    return JSON.parse(atob(token.split(".")[1])).name;
   } catch {
     return "";
   }
@@ -172,13 +170,12 @@ export default function DashboardLayout({
       >
         <div className="px-5 py-5 border-b border-white/10 flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-sm">CQ</span>
           </div>
           <div>
             <h1 className="text-sm font-bold text-white leading-none">
               CareQueue
             </h1>
-            <p className="text-xs text-neutral-400 capitalize mt-0.5">{role}</p>
+            {/* <p className="text-xs text-neutral-400 capitalize mt-0.5">{role}</p> */}
           </div>
         </div>
         <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">

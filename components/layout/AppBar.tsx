@@ -54,7 +54,7 @@ export default function AppBar() {
       }}
     >
       <div>
-        <h1 className="text-base font-semibold text-neutral-800">
+        <h1 className="text-2xl font-semibold text-neutral-800">
           {pageTitle}
         </h1>
       </div>

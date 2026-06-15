@@ -65,7 +65,7 @@ export default function PageTour({ tourId, steps, role }: Props) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 300, damping: 25 }}
-            className="fixed bottom-8 right-8 z-50 w-80 card p-5 shadow-strong"
+            className="fixed bottom-8 right-8 z-50 w-80 card p-5 shadow-strong bg-primary-500 text-white"
           >
             <div className="flex gap-1.5 mb-4">
               {steps.map((_, i) => (
@@ -82,10 +82,10 @@ export default function PageTour({ tourId, steps, role }: Props) {
               ))}
             </div>      
             <div className="mb-5">
-              <h3 className="font-semibold text-neutral-800 mb-1.5">
+              <h3 className="font-semibold text-white mb-1.5">
                 {step.title}
               </h3>
-              <p className="text-sm text-neutral-500 leading-relaxed">
+              <p className="text-sm text-neutral-100 leading-relaxed">
                 {step.content}
               </p>
             </div>
@@ -94,7 +94,7 @@ export default function PageTour({ tourId, steps, role }: Props) {
             <div className="flex items-center justify-between">
               <button
                 onClick={dismiss}
-                className="text-xs text-neutral-400 hover:text-neutral-600 transition-colors"
+                className="text-xs text-neutral-200 hover:text-neutral-100 transition-colors"
               >
                 Skip tour
               </button>
