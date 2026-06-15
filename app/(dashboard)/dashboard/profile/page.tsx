@@ -44,7 +44,7 @@ export default function ProfilePage() {
             phone: data.user.phone || "",
           });
           if (data.user.profilePicture) {
-            setPreviewUrl(`${data.user.profilePicture}?t=${Date.now()}`);
+            setPreviewUrl(data.user.profilePicture);
           }
         }
       })
@@ -56,8 +56,8 @@ export default function ProfilePage() {
     if (!file) return;
 
     // show local preview immediately
-    const objectUrl = URL.createObjectURL(file);
-    setPreviewUrl(objectUrl);
+    // const objectUrl = URL.createObjectURL(file);
+    // setPreviewUrl(objectUrl);
 
     setUploading(true);
     setError("");
@@ -78,7 +78,7 @@ export default function ProfilePage() {
         return;
       }
 
-      URL.revokeObjectURL(objectUrl);
+      // URL.revokeObjectURL(objectUrl);
 
       const freshUrl = `${data.user.profilePicture}?t=${Date.now()}`;
 
