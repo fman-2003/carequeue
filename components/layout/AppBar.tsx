@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { usePathname } from "next/navigation";
@@ -6,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getToken } from "@/lib/auth/getSession";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import NotificationsNoneOutlinedIcon from "@mui/icons-material/NotificationsNoneOutlined";
+import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
 
 function getFromToken(field: string): string {
   const token = getToken();
@@ -32,7 +31,11 @@ const PAGE_TITLES: Record<string, string> = {
   "/dashboard/profile": "My Profile",
 };
 
-export default function AppBar() {
+interface Props {
+  onMenuClick: () => void
+}
+
+export default function AppBar({ onMenuClick }: Props) {
   const pathname = usePathname();
 
   const name = getFromToken("userId") ? getFromToken("name") : "";
@@ -47,18 +50,24 @@ export default function AppBar() {
 
   return (
     <header
-      className="fixed top-0 right-0 z-40 bg-white border-b border-neutral-200 flex items-center justify-between px-6"
-      style={{
-        height: "var(--appbar-height)",
-        left: "var(--sidebar-width)",
-      }}
+      className="fixed top-0 left-0 md:left-(--sidebar-width) right-0 z-40 bg-white border-b border-neutral-200 flex items-center justify-between px-4 md:px-6"
+      style={{ height: "var(--appbar-height)" }}
     >
-      <div>
-        <h1 className="text-2xl font-semibold text-neutral-800">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onMenuClick}
+          className="md:hidden w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors -ml-1"
+        >
+          <MenuOutlinedIcon
+            sx={{ fontSize: 22, color: "var(--color-text-secondary)" }}
+          />
+        </button>
+
+        <h1 className="text-sm md:text-base font-semibold text-neutral-800 truncate">
           {pageTitle}
         </h1>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 md:gap-2">
         <Link
           href="/dashboard/settings"
           className="w-9 h-9 rounded-lg hover:bg-neutral-100 flex items-center justify-center transition-colors"

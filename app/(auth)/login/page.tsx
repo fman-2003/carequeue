@@ -50,7 +50,7 @@ export default function LoginPage() {
         alt="Doctor talking to patient"
         width={500}
         height={100}
-        className="w-1/2 min-h-screen"
+        className="hidden md:hidden lg:flex w-1/2 min-h-screen"
       />
       <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card p-8">
         <button

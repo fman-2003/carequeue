@@ -63,7 +63,7 @@ function AppointmentDetailModal({
 }) {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-gray-800">Appointment Details</h3>
           <button
@@ -75,7 +75,7 @@ function AppointmentDetailModal({
         </div>
 
         <div className="flex flex-col gap-3 text-sm">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {[
               { label: "Patient", value: appointment.patientId?.name },
               { label: "Doctor", value: appointment.doctorId?.name },
@@ -367,14 +367,12 @@ export default function AppointmentsPage() {
   if (loading)
     return (
       <PageWrapper>
-        
         <p className="text-gray-500">Loading appointments...</p>
       </PageWrapper>
     );
   if (error && appointments.length !== 0)
     return (
       <PageWrapper>
-        
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -394,7 +392,6 @@ export default function AppointmentsPage() {
         <PageTour tourId={`${role}-appointments`} steps={tourSteps} />
       )}
       <div className="flex items-center justify-between mb-6">
-        
         {(role === "doctor" || role === "receptionist") && (
           <Link
             href="/dashboard/appointments/new"
@@ -405,9 +402,8 @@ export default function AppointmentsPage() {
         )}
       </div>
 
-      {/* ── FILTERS ROW ─────────────────────────── */}
-      <div className="flex flex-wrap gap-3 mb-4">
-        <div className="flex-1 min-w-50">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-3 mb-4">
+        <div className="flex-1 min-w-50 w-full sm:w-auto">
           <SearchInput
             placeholder="Search by patient or doctor name..."
             onSearch={setSearch}
@@ -416,7 +412,7 @@ export default function AppointmentsPage() {
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 rounded px-3 py-2 text-sm text-black w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="all">All Statuses</option>
           <option value="pending">Pending</option>
@@ -425,11 +421,10 @@ export default function AppointmentsPage() {
           <option value="cancelled">Cancelled</option>
           <option value="no-show">No Show</option>
         </select>
-
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
-          className="border border-gray-300 rounded px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="border border-gray-300 rounded px-3 py-2 text-sm text-black w-full sm:w-auto focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="asc">Date: Earliest First</option>
           <option value="desc">Date: Latest First</option>
@@ -448,84 +443,85 @@ export default function AppointmentsPage() {
         </div>
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
-          <table className="w-full text-sm">
-            <thead className="bg-primary border-b border-gray-200">
-              <tr>
-                {[
-                  "Patient",
-                  "Doctor",
-                  "Date",
-                  "Time Slot",
-                  "Status",
-                  "Action",
-                ].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-4 py-3 text-gray-50 font-medium"
-                  >
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {paginated.map((appt) => (
-                <tr
-                  key={appt._id}
-                  onClick={() => setSelectedAppt(appt)}
-                  className="odd:bg-neutral-50 even:bg-neutral-100 border-b border-neutral-300 cursor-pointer"
-                >
-                  <td className="px-4 py-3 text-gray-800">
-                    {appt.patientId?.name || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {appt.doctorId?.name || "—"}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">
-                    {new Date(appt.date).toDateString()}
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">{appt.timeSlot}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[appt.status] || ""}`}
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm min-w-160">
+              <thead className="bg-primary border-b border-gray-200">
+                <tr>
+                  {[
+                    "Patient",
+                    "Doctor",
+                    "Date",
+                    "Time Slot",
+                    "Status",
+                    "Action",
+                  ].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-4 py-3 text-gray-50 font-medium"
                     >
-                      {appt.status}
-                    </span>
-                  </td>
-                  <td
-                    className="px-4 py-3"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    {role === "doctor" && <DoctorActions appt={appt} />}
-                    {role === "patient" &&
-                      appt.status !== "cancelled" &&
-                      appt.status !== "completed" && (
-                        <button
-                          disabled={statusLoading}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPendingChange({
-                              id: appt._id,
-                              status: "cancelled",
-                            });
-                          }}
-                          className="text-xs text-red-500 border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition"
-                        >
-                          Cancel
-                        </button>
-                      )}
-                    {role === "admin" && (
-                      <span className="text-xs text-gray-400">Read only</span>
-                    )}
-                  </td>
+                      {h}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {paginated.map((appt) => (
+                  <tr
+                    key={appt._id}
+                    onClick={() => setSelectedAppt(appt)}
+                    className="odd:bg-neutral-50 even:bg-neutral-100 border-b border-neutral-300 cursor-pointer"
+                  >
+                    <td className="px-4 py-3 text-gray-800">
+                      {appt.patientId?.name || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {appt.doctorId?.name || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {new Date(appt.date).toDateString()}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{appt.timeSlot}</td>
+                    <td className="px-4 py-3">
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${STATUS_STYLES[appt.status] || ""}`}
+                      >
+                        {appt.status}
+                      </span>
+                    </td>
+                    <td
+                      className="px-4 py-3"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {role === "doctor" && <DoctorActions appt={appt} />}
+                      {role === "patient" &&
+                        appt.status !== "cancelled" &&
+                        appt.status !== "completed" && (
+                          <button
+                            disabled={statusLoading}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setPendingChange({
+                                id: appt._id,
+                                status: "cancelled",
+                              });
+                            }}
+                            className="text-xs text-red-500 border border-red-200 px-2 py-1 rounded hover:bg-red-50 transition"
+                          >
+                            Cancel
+                          </button>
+                        )}
+                      {role === "admin" && (
+                        <span className="text-xs text-gray-400">Read only</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
-      {/* Pagination */}
       <Pagination
         currentPage={currentPage}
         totalPages={totalPages}

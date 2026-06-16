@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { getToken } from "@/lib/auth/getSession";
-import {motion} from "framer-motion"
+import { motion } from "framer-motion";
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -203,7 +203,7 @@ export default function AISchedulingPanel() {
       {/* TOGGLE BUTTON */}
       <button
         onClick={() => setOpen((prev) => !prev)}
-        className={`fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-2 px-3 py-4 rounded-l-lg shadow-lg transition-all ${
+        className={`fixed right-0 top-1/2 -translate-y-1/2 z-40 flex items-center gap-2 px-2 sm:px-3 py-3 sm:py-4 rounded-l-lg shadow-lg transition-all ${
           open
             ? "bg-gray-700 text-white"
             : "bg-blue-600 text-white hover:bg-blue-700"
@@ -220,7 +220,7 @@ export default function AISchedulingPanel() {
 
       {/* SLIDING PANEL */}
       <div
-        className={`fixed top-0 right-0 h-full w-95 bg-white shadow-2xl z-30 flex flex-col transition-transform duration-300 ${
+        className={`fixed top-0 right-0 h-full w-full sm:w-95 bg-white shadow-2xl z-1000 flex flex-col transition-transform duration-300 ${
           open ? "translate-x-0" : "translate-x-full"
         }`}
       >

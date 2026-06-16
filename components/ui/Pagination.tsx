@@ -43,7 +43,7 @@ export default function Pagination({
   }
 
   return (
-    <div className="flex items-center justify-between mt-4">
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4">
       <p className="text-xs text-gray-500">
         Page {currentPage} of {totalPages}
       </p>
@@ -53,7 +53,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="px-2.5 sm:px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           ← Prev
         </button>
@@ -68,7 +68,7 @@ export default function Pagination({
             <button
               key={page}
               onClick={() => onPageChange(page)}
-              className={`px-3 py-1.5 text-xs border rounded transition ${
+              className={`px-2.5 sm:px-3 py-1.5 text-xs border rounded transition ${
                 currentPage === page
                   ? "bg-blue-600 text-white border-blue-600"
                   : "border-gray-300 text-gray-600 hover:bg-gray-50"
@@ -83,7 +83,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          className="px-2.5 sm:px-3 py-1.5 text-xs border border-gray-300 rounded text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
         >
           Next →
         </button>

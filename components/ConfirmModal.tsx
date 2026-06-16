@@ -44,7 +44,7 @@ export default function ConfirmModal({
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.94, y: 16 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="bg-white rounded-2xl shadow-strong p-6 w-full max-w-sm"
+          className="bg-white rounded-2xl shadow-strong p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto"
           onClick={(e) => e.stopPropagation()}
         >
           <h3 className="font-bold text-neutral-800 text-base mb-2">{title}</h3>
@@ -66,7 +66,11 @@ export default function ConfirmModal({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.97 }}
               onClick={onConfirm}
-              className={danger ? `${styles.btnDanger} text-sm` : `${styles.btnPrimary} text-sm`}
+              className={
+                danger
+                  ? `${styles.btnDanger} text-sm`
+                  : `${styles.btnPrimary} text-sm`
+              }
             >
               {confirmText}
             </motion.button>

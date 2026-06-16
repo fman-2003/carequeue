@@ -3,16 +3,13 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { useRouter } from "next/navigation";
 import { getToken, saveToken } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
-import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import PageWrapper from "@/components/layout/PageWrapper";
 import { styles } from "@/app/styles";
 
 export default function ProfilePage() {
-  const router = useRouter();
 
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);

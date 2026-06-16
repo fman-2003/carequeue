@@ -94,7 +94,7 @@ function AdminOverview() {
 
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             {[
               { label: "Total", value: stats.total },
               { label: "Today", value: stats.today },
@@ -118,7 +118,7 @@ function AdminOverview() {
 
           {data ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <VolumeLineChart
                   data={data.volumeOverTime}
                   title="Appointments — Last 14 Days"
@@ -126,7 +126,7 @@ function AdminOverview() {
                 <StatusDonutChart data={data.statusBreakdown} />
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
                 <NoShowBarChart data={data.noShowByDoctor} />
                 <PeakHoursHeatmap data={data.peakHours} />
               </div>
@@ -190,7 +190,7 @@ function DoctorOverview() {
         <PageTour tourId="doctor-dashboard" steps={TOURS.doctor.dashboard} />
 
         <div>
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-primary rounded-lg border border-primary-300 p-5">
               <p className="text-sm text-gray-100">Today&apos;s Appointments</p>
               <p className="text-3xl font-bold text-gray-50 mt-1">
@@ -226,7 +226,7 @@ function DoctorOverview() {
 
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
-          <div className="grid grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             <div className="bg-primary rounded-lg border border-primary-300 p-5">
               <p className="text-sm text-gray-100">Today&apos;s Appointments</p>
               <p className="text-3xl font-bold text-gray-50 mt-1">
@@ -247,12 +247,12 @@ function DoctorOverview() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-4">
             <MonthlyTrendChart data={data.monthlyTrend} />
             <RiskDistributionChart data={data.riskDistribution} />
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             <StatusDonutChart data={data.statusBreakdown} />
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <p className="text-sm font-semibold text-gray-700 mb-3">
@@ -361,7 +361,7 @@ function PatientOverview() {
 
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             {/* Doctor Card */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <p className="text-sm font-medium text-gray-500 mb-3">

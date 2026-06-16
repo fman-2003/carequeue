@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
@@ -142,18 +143,20 @@ export default function DashboardLayout({
   const pathname = usePathname();
   const [role, setRole] = useState("");
   const [name, setName] = useState("");
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated()) {
       router.push("/login");
       return;
     }
-    function setStates() {
-      setRole(getRoleFromToken());
-      setName(getNameFromToken());
-    }
-    setStates();
+    setRole(getRoleFromToken());
+    setName(getNameFromToken());
   }, [router]);
+
+  useEffect(() => {
+    setMobileSidebarOpen(false);
+  }, [pathname]);
 
   const handleLogout = () => {
     clearToken();
@@ -164,19 +167,36 @@ export default function DashboardLayout({
 
   return (
     <div className="h-screen flex overflow-hidden bg-neutral-50">
+      {mobileSidebarOpen && (
+        <div
+          className="fixed inset-0 z-30 bg-neutral-900/40 md:hidden"
+          onClick={() => setMobileSidebarOpen(false)}
+        />
+      )}
       <aside
-        className="flex flex-col shrink-0 h-full bg-neutral-900"
-        style={{ width: "var(--sidebar-width)" }}
+        className={`
+          fixed md:static top-0 left-0 z-40
+          flex flex-col shrink-0 h-full bg-neutral-900
+          transition-transform duration-300 ease-out
+          w-64 md:w-(--sidebar-width)
+          ${mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}
+          md:translate-x-0
+        `}
       >
         <div className="px-5 py-5 border-b border-white/10 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-gradient-primary flex items-center justify-center shrink-0">
-          </div>
+          <div className="w-8 h-8 rounded-xl bg-gradient-primary flex items-center justify-center shrink-0"></div>
           <div>
             <h1 className="text-sm font-bold text-white leading-none">
               CareQueue
             </h1>
             {/* <p className="text-xs text-neutral-400 capitalize mt-0.5">{role}</p> */}
           </div>
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="md:hidden ml-auto w-7 h-7 rounded-lg hover:bg-white/10 flex items-center justify-center text-neutral-400"
+          >
+            ✕
+          </button>
         </div>
         <nav className="flex-1 px-3 py-4 flex flex-col gap-0.5 overflow-y-auto">
           {links.map(({ href, label, Icon }) => {
@@ -225,10 +245,10 @@ export default function DashboardLayout({
       </aside>
 
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        <AppBar />
+        <AppBar onMenuClick={() => setMobileSidebarOpen(true)} />
         <main
-          className="flex-1 overflow-y-auto p-6"
-          style={{ paddingTop: "calc(var(--appbar-height) + 1.5rem)" }}
+          className="flex-1 overflow-y-auto p-6 md:p-6"
+          style={{ paddingTop: "calc(var(--appbar-height) + 1rem)" }}
         >
           {children}
         </main>

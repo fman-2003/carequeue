@@ -155,7 +155,7 @@ export default function HealthProfilePage() {
               Biometrics
             </h3>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className={labelClass}>
                   Blood Group <span className="text-red-500 text-sm">*</span>
@@ -455,7 +455,7 @@ export default function HealthProfilePage() {
             <h3 className="text-sm font-semibold text-gray-700 mb-4">
               Emergency Contact
             </h3>
-            <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className={labelClass}>Full Name</label>
                 <input
@@ -516,7 +516,7 @@ export default function HealthProfilePage() {
             <h3 className="text-sm font-semibold text-gray-700 mb-4">
               Insurance
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className={labelClass}>Insurance Provider</label>
                 <input

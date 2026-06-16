@@ -150,7 +150,7 @@ export default function MyPatientsPage() {
         {/* ── PATIENT DETAIL MODAL ───────── */}
         {selected && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-4 max-h-[85vh] flex flex-col">
+            <div className="bg-white rounded-xl shadow-strong p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
               {/* Modal header */}
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                 <div>
@@ -211,7 +211,7 @@ export default function MyPatientsPage() {
                               <p className="text-xs text-gray-400 uppercase tracking-wide mb-2">
                                 Biometrics
                               </p>
-                              <div className="grid grid-cols-3 gap-3">
+                              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                                 {[
                                   {
                                     label: "Blood Group",
@@ -518,7 +518,7 @@ export default function MyPatientsPage() {
         {filteredPatients.length === 0 ? (
           <p className="text-gray-400">No patients match your search.</p>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {filteredPatients.map((patient) => (
               <button
                 key={patient._id}

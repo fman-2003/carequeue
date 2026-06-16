@@ -127,7 +127,7 @@ export default function UsersPage() {
       <ClinicGuard hasClinic={!!clinicId} role="admin">
         {selected && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg shadow-lg w-full max-w-lg mx-4 max-h-[85vh] overflow-y-auto">
+            <div className="bg-white rounded-xl shadow-strong p-4 sm:p-6 w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
               <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
                 <div>
                   <h3 className="font-bold text-gray-800">{selected.name}</h3>
@@ -148,7 +148,7 @@ export default function UsersPage() {
               </div>
 
               <div className="px-6 py-4 flex flex-col gap-4 text-sm">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                   {[
                     { label: "Email", value: selected.email },
                     { label: "Phone", value: selected.phone || "—" },
@@ -176,7 +176,7 @@ export default function UsersPage() {
                     {statsLoading ? (
                       <p className="text-gray-400 text-sm">Loading stats...</p>
                     ) : doctorStats ? (
-                      <div className="grid grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {[
                           {
                             label: "Total Appointments",
@@ -221,7 +221,7 @@ export default function UsersPage() {
                     <p className="text-xs text-gray-400 uppercase tracking-wide mb-3">
                       Patient Details
                     </p>
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                       <div className="bg-gray-50 rounded p-3">
                         <p className="text-xs text-gray-400">
                           Preferred Doctor
@@ -267,7 +267,7 @@ export default function UsersPage() {
               No doctors match your search.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {filteredDoctors.map((doctor) => (
                 <button
                   key={doctor._id}
@@ -302,7 +302,7 @@ export default function UsersPage() {
               No patients match your search.
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {filteredPatients.map((patient) => (
                 <button
                   key={patient._id}

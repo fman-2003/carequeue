@@ -225,7 +225,7 @@ export default function VisitRecordPage({
             <p className="text-xs font-semibold text-primary-700 uppercase tracking-wide mb-2">
               Patient Health Summary
             </p>
-            <div className="grid grid-cols-3 gap-3 text-xs text-primary-800">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs text-primary-800">
               <p>
                 <span className="font-medium">Blood Group:</span>{" "}
                 {profile.bloodGroup || "—"}
@@ -270,7 +270,7 @@ export default function VisitRecordPage({
             <h3 className="text-sm font-semibold text-neutral-700 mb-4">
               Vitals
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {[
                 {
                   label: "Blood Pressure (mmHg)",
@@ -437,7 +437,7 @@ export default function VisitRecordPage({
               <p className="text-xs text-neutral-500 mb-3 font-medium">
                 Add Prescription
               </p>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {[
                   {
                     label: "Medication",
@@ -582,7 +582,7 @@ export default function VisitRecordPage({
             <h3 className="text-sm font-semibold text-neutral-700 mb-4">
               Follow Up & Referral
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <div>
                 <label className={labelClass}>Follow-Up Date</label>
                 <input

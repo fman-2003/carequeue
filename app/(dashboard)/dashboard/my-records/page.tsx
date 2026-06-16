@@ -81,7 +81,7 @@ export default function MyRecordsPage() {
         tourId="patient-my-records"
         steps={TOURS.patient["my-records"]}
       />
-      
+
       <p className="text-sm text-gray-500 mb-4">
         Visit summaries from your appointments including prescriptions, lab
         tests, and follow-up details.
@@ -125,7 +125,7 @@ export default function MyRecordsPage() {
             </div>
 
             <div className="flex flex-col gap-4 text-sm">
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 <div>
                   <p className="text-xs text-gray-400 uppercase tracking-wide">
                     Doctor
