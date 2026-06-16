@@ -407,15 +407,12 @@ export default function AppointmentsPage() {
 
       {/* ── FILTERS ROW ─────────────────────────── */}
       <div className="flex flex-wrap gap-3 mb-4">
-        {/* Search */}
         <div className="flex-1 min-w-50">
           <SearchInput
             placeholder="Search by patient or doctor name..."
             onSearch={setSearch}
           />
         </div>
-
-        {/* Status filter */}
         <select
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value)}
@@ -429,7 +426,6 @@ export default function AppointmentsPage() {
           <option value="no-show">No Show</option>
         </select>
 
-        {/* Sort order */}
         <select
           value={sortOrder}
           onChange={(e) => setSortOrder(e.target.value as "asc" | "desc")}
@@ -440,13 +436,10 @@ export default function AppointmentsPage() {
         </select>
       </div>
 
-      {/* Result count */}
       <p className="text-xs text-gray-400 mb-3">
         {filtered.length} appointment{filtered.length !== 1 ? "s" : ""} found
         {search || statusFilter !== "all" ? " (filtered)" : ""}
       </p>
-
-      {/* Table */}
       {paginated.length === 0 ? (
         <div className="bg-white border border-gray-200 rounded-lg p-8 text-center">
           <p className="text-gray-400 text-sm">
@@ -456,7 +449,7 @@ export default function AppointmentsPage() {
       ) : (
         <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="bg-primary border-b border-gray-200">
               <tr>
                 {[
                   "Patient",
@@ -468,7 +461,7 @@ export default function AppointmentsPage() {
                 ].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-3 text-gray-600 font-medium"
+                    className="text-left px-4 py-3 text-gray-50 font-medium"
                   >
                     {h}
                   </th>

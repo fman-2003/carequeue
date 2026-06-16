@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useEffect, useState, useMemo } from 'react'
-import { getToken } from '@/lib/auth/getSession'
-import ClinicGuard from '@/components/ClinicGuard'
-import SearchInput from '@/components/ui/SearchInput'
+import { useEffect, useState, useMemo } from "react";
+import { getToken } from "@/lib/auth/getSession";
+import ClinicGuard from "@/components/ClinicGuard";
+import SearchInput from "@/components/ui/SearchInput";
 import PageTour from "@/components/ui/PageTour";
 import { TOURS } from "@/lib/tour";
 import PageWrapper from "@/components/layout/PageWrapper";
@@ -15,15 +15,15 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selected, setSelected] = useState<any>(null);
-  const [userType,  setUserType]  = useState<'doctor' | 'patient' | null>(null)
+  const [userType, setUserType] = useState<"doctor" | "patient" | null>(null);
 
   // search states are separated from doctors and patients
-  const [doctorSearch,  setDoctorSearch]  = useState('')
-  const [patientSearch, setPatientSearch] = useState('')
+  const [doctorSearch, setDoctorSearch] = useState("");
+  const [patientSearch, setPatientSearch] = useState("");
 
   // doctor detail stats
-  const [doctorStats, setDoctorStats] = useState<any>(null)
-  const [statsLoading, setStatsLoading] = useState(false)
+  const [doctorStats, setDoctorStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(false);
 
   function getClinicIdFromToken(): string | null {
     const token = getToken();
@@ -55,10 +55,10 @@ export default function UsersPage() {
   }, []);
 
   async function handleSelectDoctor(doctor: any) {
-    setSelected(doctor)
-    setUserType('doctor')
-    setDoctorStats(null)
-    setStatsLoading(true)
+    setSelected(doctor);
+    setUserType("doctor");
+    setDoctorStats(null);
+    setStatsLoading(true);
 
     /**
      * Fetch this doctor's appointments to compute
@@ -67,55 +67,56 @@ export default function UsersPage() {
      * Admin uses this to understand each doctor's influence.
      */
     try {
-      const res  = await fetch('/api/admin/doctor-stats?doctorId=' + doctor._id, {
-        headers: { Authorization: `Bearer ${getToken()}` }
-      })
-      const data = await res.json()
-      setDoctorStats(data.stats || null)
+      const res = await fetch(
+        "/api/admin/doctor-stats?doctorId=" + doctor._id,
+        {
+          headers: { Authorization: `Bearer ${getToken()}` },
+        },
+      );
+      const data = await res.json();
+      setDoctorStats(data.stats || null);
     } catch {
       // stats unavailable — show empty state
     } finally {
-      setStatsLoading(false)
+      setStatsLoading(false);
     }
   }
 
   function handleSelectPatient(patient: any) {
-    setSelected(patient)
-    setUserType('patient')
+    setSelected(patient);
+    setUserType("patient");
   }
 
   // filtered lists
   const filteredDoctors = useMemo(() => {
-    if (!doctorSearch.trim()) return doctors
-    const q = doctorSearch.toLowerCase()
-    return doctors.filter((d) =>
-      d.name?.toLowerCase().includes(q) ||
-      d.email?.toLowerCase().includes(q)
-    )
-  }, [doctors, doctorSearch])
+    if (!doctorSearch.trim()) return doctors;
+    const q = doctorSearch.toLowerCase();
+    return doctors.filter(
+      (d) =>
+        d.name?.toLowerCase().includes(q) || d.email?.toLowerCase().includes(q),
+    );
+  }, [doctors, doctorSearch]);
 
   const filteredPatients = useMemo(() => {
-    if (!patientSearch.trim()) return patients
-    const q = patientSearch.toLowerCase()
-    return patients.filter((p) =>
-      p.name?.toLowerCase().includes(q)  ||
-      p.email?.toLowerCase().includes(q) ||
-      p.phone?.toLowerCase().includes(q)
-    )
-  }, [patients, patientSearch])
-
+    if (!patientSearch.trim()) return patients;
+    const q = patientSearch.toLowerCase();
+    return patients.filter(
+      (p) =>
+        p.name?.toLowerCase().includes(q) ||
+        p.email?.toLowerCase().includes(q) ||
+        p.phone?.toLowerCase().includes(q),
+    );
+  }, [patients, patientSearch]);
 
   if (loading)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Clinic Users</h2>
         <p className="text-gray-500">Loading users...</p>
       </PageWrapper>
     );
   if (error)
     return (
       <PageWrapper>
-        <h2 className="text-xl font-bold text-gray-800 mb-6">Clinic Users</h2>
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
@@ -123,7 +124,6 @@ export default function UsersPage() {
   return (
     <PageWrapper>
       <PageTour tourId="admin-users" steps={TOURS.admin.users} />
-      <h2 className="text-xl font-bold text-gray-800 mb-6">Clinic Users</h2>
       <ClinicGuard hasClinic={!!clinicId} role="admin">
         {selected && (
           <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -148,7 +148,6 @@ export default function UsersPage() {
               </div>
 
               <div className="px-6 py-4 flex flex-col gap-4 text-sm">
-                {/* Basic info — all users */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
                     { label: "Email", value: selected.email },

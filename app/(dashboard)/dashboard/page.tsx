@@ -75,13 +75,6 @@ function AdminOverview() {
       </PageWrapper>
     );
 
-  // const cards = [
-  //   { label: "Total Appointments", value: stats?.total },
-  //   { label: "Confirmed", value: stats?.confirmed },
-  //   { label: "Pending", value: stats?.pending },
-  //   { label: "No Shows", value: stats?.noShow },
-  // ];
-
   if (analyticsLoading)
     return (
       <PageWrapper>
@@ -94,7 +87,6 @@ function AdminOverview() {
         <p className="text-red-500">{error}</p>
       </PageWrapper>
     );
-  // if (!data) return null;
 
   return (
     <PageWrapper>
@@ -114,10 +106,10 @@ function AdminOverview() {
             ].map((card) => (
               <div
                 key={card.label}
-                className="bg-white rounded-lg border border-gray-200 p-5"
+                className="bg-primary rounded-lg border border-primary-300 p-5"
               >
-                <p className="text-sm text-gray-500">{card.label}</p>
-                <p className="text-3xl font-bold text-gray-800 mt-1">
+                <p className="text-sm text-gray-100">{card.label}</p>
+                <p className="text-3xl font-bold text-gray-50 mt-1">
                   {card.value}
                 </p>
               </div>
@@ -199,21 +191,21 @@ function DoctorOverview() {
 
         <div>
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Today&apos;s Appointments</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
+            <div className="bg-primary rounded-lg border border-primary-300 p-5">
+              <p className="text-sm text-gray-100">Today&apos;s Appointments</p>
+              <p className="text-3xl font-bold text-gray-50 mt-1">
                 {todayAppointments.length}
               </p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Total Appointments</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
+            <div className="bg-primary rounded-lg border border-primary-300 p-5">
+              <p className="text-sm text-gray-100">Total Appointments</p>
+              <p className="text-3xl font-bold text-gray-50 mt-1">
                 {appointments.length}
               </p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Pending Confirmation</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
+            <div className="bg-primary rounded-lg border border-primary-300 p-5">
+              <p className="text-sm text-gray-100">Pending Confirmation</p>
+              <p className="text-3xl font-bold text-gray-50 mt-1">
                 {appointments.filter((a) => a.status === "pending").length}
               </p>
             </div>
@@ -223,48 +215,6 @@ function DoctorOverview() {
             No analytics currently available. Select a clinic to access
             analytics.
           </h3>
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <MonthlyTrendChart data={data.monthlyTrend} />
-            <RiskDistributionChart data={data.riskDistribution} />
-          </div> */}
-
-          {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <StatusDonutChart data={data.statusBreakdown} />
-
-            <div className="bg-white border border-gray-200 rounded-lg p-5">
-              <p className="text-sm font-semibold text-gray-700 mb-3">
-                Today&apos;s Schedule
-                </p>
-                {todayAppointments.length === 0 ? (
-                  <p className="text-sm text-gray-400">No appointments today.</p>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                    {todayAppointments.map((appt) => (
-                      <div
-                      key={appt._id}
-                      className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0"
-                      >
-                      <div>
-                      <p className="text-sm font-medium text-gray-800">
-                      {appt.patientId?.name || "—"}
-                      </p>
-                      <p className="text-xs text-gray-500">{appt.timeSlot}</p>
-                      </div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full font-medium ${
-                          appt.status === "confirmed"
-                            ? "bg-green-100 text-green-700"
-                            : "bg-yellow-100 text-yellow-700"
-                        }`}
-                      >
-                        {appt.status}
-                      </span>
-                    </div>
-                  ))}
-                  </div>
-                  )}
-                  </div>
-          </div> */}
         </div>
       </PageWrapper>
     );
@@ -277,21 +227,21 @@ function DoctorOverview() {
       <ClinicGuard hasClinic={!!clinicId} role={role}>
         <div>
           <div className="grid grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Today&apos;s Appointments</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
+            <div className="bg-primary rounded-lg border border-primary-300 p-5">
+              <p className="text-sm text-gray-100">Today&apos;s Appointments</p>
+              <p className="text-3xl font-bold text-gray-50 mt-1">
                 {data.todayCount}
               </p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Total Appointments</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
+            <div className="bg-primary rounded-lg border border-primary-300 p-5">
+              <p className="text-sm text-gray-100">Total Appointments</p>
+              <p className="text-3xl font-bold text-gray-50 mt-1">
                 {data.totalCount}
               </p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-5">
-              <p className="text-sm text-gray-500">Pending Confirmation</p>
-              <p className="text-3xl font-bold text-gray-800 mt-1">
+            <div className="bg-primary rounded-lg border border-primary-300 p-5">
+              <p className="text-sm text-gray-100">Pending Confirmation</p>
+              <p className="text-3xl font-bold text-gray-50 mt-1">
                 {data.pendingCount}
               </p>
             </div>
@@ -304,8 +254,6 @@ function DoctorOverview() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <StatusDonutChart data={data.statusBreakdown} />
-
-            {/* Today's schedule list */}
             <div className="bg-white border border-gray-200 rounded-lg p-5">
               <p className="text-sm font-semibold text-gray-700 mb-3">
                 Today&apos;s Schedule
@@ -512,6 +460,4 @@ export default function DashboardPage() {
   if (role === "admin") return <AdminOverview />;
   if (role === "doctor") return <DoctorOverview />;
   if (role === "patient") return <PatientOverview />;
-
-  // return <p className="text-gray-500">Loading...</p>;
 }

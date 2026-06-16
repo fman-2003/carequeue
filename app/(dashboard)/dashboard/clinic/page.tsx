@@ -239,12 +239,12 @@ export default function CreateClinicPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-lg mb-4">
+          <div className="bg-error-light text-error-text text-sm px-4 py-3 rounded-lg mb-4">
             {error}
           </div>
         )}
         {success && (
-          <div className="bg-green-50 text-green-600 text-sm px-4 py-3 rounded-lg mb-4">
+          <div className="bg-success-light text-success-text text-sm px-4 py-3 rounded-lg mb-4">
             {success}
           </div>
         )}
