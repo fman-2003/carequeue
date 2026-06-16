@@ -141,9 +141,9 @@ export default function ProfilePage() {
   return (
     <PageWrapper>
       <div className="max-w-lg">
-        <div className="bg-white border shadow-strong mx-auto border-neutral-200 rounded-xl p-6 flex flex-col gap-3 text-sm">
+        <div className="bg-white border mx-auto border-neutral-200 rounded-xl p-6 flex flex-col gap-3 text-sm">
           <div className="flex flex-col items-center gap-3 mb-8">
-            <button
+            {/* <button
               onClick={() => router.back()}
               className="w-9 h-9 hover:text-neutral-500 flex items-center justify-center transition-colors"
             >
@@ -151,7 +151,7 @@ export default function ProfilePage() {
                 sx={{ fontSize: 20, color: "var(--color-text-neutral)" }}
               />{" "}
               Back
-            </button>
+            </button> */}
             <div>
               <p className="page-subtitle">
                 Update your profile information and profile picture.
@@ -174,7 +174,6 @@ export default function ProfilePage() {
           <div className={`${styles.card} p-6 mb-4`}>
             <h3 className="section-title mb-5">Profile Picture</h3>
             <div className="flex items-center gap-5">
-              {/* Avatar */}
               <div className="relative">
                 <div className="w-20 h-20 rounded-full overflow-hidden border-2 border-neutral-200 bg-gradient-primary flex items-center justify-center">
                   {previewUrl ? (
@@ -228,8 +227,6 @@ export default function ProfilePage() {
               </div>
             </div>
           </div>
-
-          {/* Profile info form */}
           <div className={`${styles.card} p-6`}>
             <h3 className="section-title mb-5">Personal Information</h3>
 

@@ -128,7 +128,7 @@ export default function MyPatientsPage() {
         steps={TOURS.doctor["my-patients"]}
       />
       <ClinicGuard hasClinic={!!clinicId} role={role}>
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center shadow-medium justify-between mb-6">
           <div>
             <p className="text-sm text-gray-500 mt-0.5">
               {filteredPatients.length} patient

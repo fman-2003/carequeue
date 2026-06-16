@@ -272,7 +272,7 @@ export default function UsersPage() {
                 <button
                   key={doctor._id}
                   onClick={() => handleSelectDoctor(doctor)}
-                  className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:border-blue-300 hover:shadow-sm transition"
+                  className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:border-blue-300 hover:shadow-medium transition"
                 >
                   <p className="font-medium text-gray-800">{doctor.name}</p>
                   <p className="text-sm text-gray-500 mt-1">{doctor.email}</p>
@@ -307,7 +307,7 @@ export default function UsersPage() {
                 <button
                   key={patient._id}
                   onClick={() => handleSelectPatient(patient)}
-                  className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:border-blue-300 hover:shadow-sm transition"
+                  className="bg-white border border-gray-200 rounded-lg p-4 text-left hover:border-blue-300 hover:shadow-medium transition"
                 >
                   <p className="font-medium text-gray-800">{patient.name}</p>
                   <p className="text-sm text-gray-500 mt-1">{patient.email}</p>
