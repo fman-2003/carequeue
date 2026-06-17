@@ -82,7 +82,7 @@ export default function SignupPage() {
         alt="Doctor handling patient"
         width={1000}
         height={1000}
-        className="w-1/2 min-h-screen"
+        className="hidden md:hidden lg:flex w-1/2 min-h-screen"
       />
       <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card px-8 py-4">
         <button
