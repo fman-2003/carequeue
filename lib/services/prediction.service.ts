@@ -133,6 +133,8 @@ function buildModel(): tf.Sequential {
     metrics: ["accuracy"],
   });
 
+  m.summary()
+
   return m;
 }
 

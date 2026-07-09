@@ -12,13 +12,13 @@ import Image from "next/image";
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
+  const [error, setError] = useState({ email: "", password: "", general: "" });
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setError({ email: "", password: "", general: "" });
 
     try {
       const res = await fetch("/api/auth/login", {
@@ -30,14 +30,21 @@ export default function LoginPage() {
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || "Login failed");
+        setError({
+          email: data.error.email,
+          password: data.error.password,
+          general: "Login failed",
+        });
         return;
       }
 
       saveToken(data.token);
       router.push("/dashboard");
     } catch (err: any) {
-      setError("Something went wrong. Please try again.");
+      setError({
+        ...error,
+        general: "Something went wrong. Please try again.",
+      });
     } finally {
       setLoading(false);
     }
@@ -54,7 +61,7 @@ export default function LoginPage() {
       />
       <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card p-8">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="w-9 h-9 hover:text-neutral-500 flex items-center justify-center transition-colors"
         >
           <ArrowBackOutlinedIcon
@@ -64,13 +71,11 @@ export default function LoginPage() {
         </button>
         <h1 className="text-2xl font-bold text-neutral-800 mb-2">CareQueue</h1>
         <p className="text-neutral-500 mb-6">Sign in to your account</p>
-
-        {error && (
-          <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded mb-4">
-            {error}
-          </div>
+        {error.general && (
+          <p className="bg-red-50 text-red-600 text-xs px-4 py-3 rounded mb-4">
+            {error.general}
+          </p>
         )}
-
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -84,6 +89,11 @@ export default function LoginPage() {
               placeholder="uith@carequeue.com"
               // required
             />
+            {error.email && (
+              <p className="bg-red-50 text-red-600 text-xs px-4 py-3 rounded mb-4">
+                {error.email}
+              </p>
+            )}
           </div>
 
           <div>
@@ -98,6 +108,11 @@ export default function LoginPage() {
               placeholder="••••••••"
               // required
             />
+            {error.password && (
+              <p className="bg-red-50 text-red-600 text-xs px-4 py-3 rounded mb-4">
+                {error.password}
+              </p>
+            )}
           </div>
 
           <button

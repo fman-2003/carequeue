@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, } from "next/navigation";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
 import Image from "next/image";
@@ -86,7 +86,7 @@ export default function SignupPage() {
       />
       <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card px-8 py-4">
         <button
-          onClick={() => router.back()}
+          onClick={() => router.push("/")}
           className="w-9 h-9 hover:text-neutral-500 flex items-center justify-center transition-colors"
         >
           <ArrowBackOutlinedIcon

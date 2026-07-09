@@ -10,7 +10,7 @@ export async function POST(req: NextRequest) {
     const parsed = loginSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
-        { error: parsed.error.issues.map((issue) => issue.message).join(", ") },
+        { error: parsed.error },
         { status: 422 },
       );
     }
