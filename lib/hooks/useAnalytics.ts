@@ -39,11 +39,7 @@ export function useAnalytics() {
         const now = new Date();
         const today = now.toDateString();
 
-        /**
-         * STATUS BREAKDOWN
-         * Count appointments per status.
-         * Used for the donut chart.
-         */
+         // STATUS BREAKDOWN         
         const statusCounts: Record<string, number> = {
           confirmed: 0,
           pending: 0,
@@ -78,8 +74,6 @@ export function useAnalytics() {
 
         /**
          * VOLUME OVER TIME — last 14 days
-         * Group appointments by date.
-         * Used for the line chart.
          */
         const last14: Record<string, number> = {};
         for (let i = 13; i >= 0; i--) {
@@ -104,13 +98,8 @@ export function useAnalytics() {
           count,
         }));
 
-        /**
-         * NO-SHOW RATE BY DOCTOR
-         * For each doctor, calculate:
-         * noShowRate = noShows / (completed + noShows)
-         * Only count closed appointments — pending/confirmed
-         * haven't happened yet so they skew the rate.
-         */
+        
+         // NO-SHOW RATE BY DOCTOR 
         const doctorMap: Record<
           string,
           { noShow: number; closed: number; name: string }
@@ -167,11 +156,7 @@ export function useAnalytics() {
           });
         });
 
-        /**
-         * RISK DISTRIBUTION
-         * Band appointments into low/medium/high no-show risk.
-         * Used for bar chart on doctor dashboard.
-         */
+         // RISK DISTRIBUTION         
         const riskBands = { low: 0, medium: 0, high: 0 };
         appts.forEach((a) => {
           if (a.noShowRisk == null) return;

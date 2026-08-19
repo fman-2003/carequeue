@@ -59,8 +59,6 @@ const UserSchema = new Schema<IUser>(
   { timestamps: true },
 );
 
-// This is called right before every .save() to prevent re-hashing of password on every save,
-// if password is not the one modified
 UserSchema.pre("save", async function () {
   if (!this.isModified("password")) return;
   try {
@@ -70,8 +68,6 @@ UserSchema.pre("save", async function () {
   }
 });
 
-// An instance that can be called on any single user document to compare
-// the user password with the hashed password in the database
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string,
 ) {

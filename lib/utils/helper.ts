@@ -25,12 +25,6 @@ export function validateTwilioSignature(
 
   if (!twilioSignature) return false;
 
-  /**
-   * Twilio's signature is an HMAC-SHA1 hash of the
-   * full webhook URL + sorted POST params, signed
-   * with your auth token. We recreate that hash
-   * and compare it against what Twilio sent.
-   */
   const expectedSignature = crypto
     .createHmac("sha1", authToken)
     .update(Buffer.from(webhookUrl + body))
