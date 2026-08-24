@@ -127,19 +127,21 @@ function Hero() {
 
       <div className="relative max-w-6xl mx-auto px-6 py-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
         <div>
-          <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-6">
-            <div className="w-1.5 h-1.5 rounded-full bg-secondary animate-pulse-slow" />
+          <div className="animate-pulse inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-secondary" />
             <span className="text-secondary text-xs font-medium">
               Built for Nigerian Healthcare
             </span>
           </div>
 
           <h1 className="text-5xl lg:text-6xl font-bold text-white leading-tight mb-6">
-            Healthcare
-            <span className="block bg-linear-to-r from-primary-300 to-secondary bg-clip-text text-transparent">
+            <p className="xl:block lg:block inline">Healthcare </p>
+            <span className="xl:block lg:block xs:block text-5xl font-bold lg:text-6xl bg-linear-to-r from-primary-300 to-secondary bg-clip-text text-transparent">
               Scheduling
             </span>
-            Reimagined.
+            <p className="block text-5xl lg:text-6xl font-bold text-white leading-tight">
+              Reimagined.
+            </p>
           </h1>
 
           <p className="text-lg text-neutral-300 leading-relaxed mb-8 max-w-xl">
@@ -455,7 +457,7 @@ function HowItWorks() {
     {
       step: "01",
       title: "Clinic registers",
-      desc: "Admin creates the clinic, sets working hours, slot duration, and invites doctors and receptionists.",
+      desc: "Admin creates the clinic, sets working hours, slot duration, and invites doctors to join the clinic via unique codes.",
       role: "Admin",
     },
     {
@@ -467,12 +469,12 @@ function HowItWorks() {
     {
       step: "03",
       title: "Book an appointment",
-      desc: "Patient picks a date and available time slot — or describes their need to the AI assistant in plain English.",
-      role: "Patient",
+      desc: "Patient picks a date and available time slot — or describes their need to the AI assistant in plain English. Doctors can also book appointments on the patients' behalf.",
+      role: "Patient & Doctor",
     },
     {
       step: "04",
-      title: "Doctor confirms",
+      title: "Doctor responds",
       desc: "Doctor receives a WhatsApp notification and confirms or rejects the appointment with one tap.",
       role: "Doctor",
     },
@@ -522,7 +524,7 @@ function HowItWorks() {
                   {step}
                 </span>
                 <span
-                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${roleColors[role]}`}
+                  className={`text-xs font-medium px-2.5 py-1 rounded-full ${roleColors[role] ? roleColors[role] : "bg-linear-to-r from-primary-50 to-primary-100"}`}
                 >
                   {role}
                 </span>
@@ -541,7 +543,7 @@ function ForClinics() {
   const audiences = [
     {
       role: "For Patients",
-      icon: "🧑‍⚕️",
+      icon: "🙍🏽‍♂️",
       color: "border-t-primary",
       points: [
         "Book appointments from your phone in under 2 minutes",
@@ -553,7 +555,7 @@ function ForClinics() {
     },
     {
       role: "For Doctors",
-      icon: "👨‍⚕️",
+      icon: "👨🏽‍⚕️",
       color: "border-t-secondary",
       points: [
         "See your full daily schedule at a glance",
@@ -660,7 +662,7 @@ function Footer() {
     <footer className="bg-neutral-900 py-12">
       <div className="max-w-6xl mx-auto px-6">
         <div className="flex flex-col md:flex-row items-center">
-          <p className="text-xs text-neutral-500">
+          <p className="text-xs text-neutral-500 m-auto">
             © {new Date().getFullYear()} CareQueue. Built for Nigeria. By
             Fulfilment.
           </p>
@@ -680,7 +682,9 @@ export default function LandingPage() {
       <HowItWorks />
       <ForClinics />
       <CTA />
-      <Footer />
+      {/* <div className="m-auto items-center"> */}
+        <Footer />
+      {/* </div> */}
     </div>
   );
 }

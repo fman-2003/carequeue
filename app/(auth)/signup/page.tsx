@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
 import Image from "next/image";
@@ -19,9 +19,17 @@ export default function SignupPage() {
     role: "patient" as "patient" | "doctor" | "admin" | "receptionist",
     inviteCode: "",
   });
-
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [viewPage, setViewPage] = useState(false);
+
+  useEffect(() => {
+    const viewPageTimer = setTimeout(() => {
+      setViewPage(true);
+    }, 4000);
+
+    return () => clearTimeout(viewPageTimer);
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -82,6 +90,7 @@ export default function SignupPage() {
         alt="Doctor handling patient"
         width={1000}
         height={1000}
+        loading="lazy"
         className="hidden md:hidden lg:flex w-1/2 min-h-screen"
       />
       <div className="w-full mx-auto max-w-md bg-white rounded-xl shadow-card px-8 py-4">
@@ -180,7 +189,10 @@ export default function SignupPage() {
                 type="text"
                 value={form.inviteCode || ""}
                 onChange={(e) =>
-                  setForm({ ...form, inviteCode: e.target.value.toUpperCase() })
+                  setForm({
+                    ...form,
+                    inviteCode: e.target.value.toUpperCase(),
+                  })
                 }
                 className={inputClass}
                 placeholder="CQ-XXXXXXXX"
@@ -236,5 +248,6 @@ export default function SignupPage() {
         </p>
       </div>
     </main>
+    // )
   );
 }
