@@ -10,7 +10,9 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     include: ["**/test/**/*.test.{ts,tsx}"],
-    // pool: "forks",
+    // Supplies the env vars the auth and notification modules assert on
+    // at import time — see tests/setup.ts.
+    setupFiles: ["./tests/setup.ts"],
     clearMocks: true,
     restoreMocks: true,
   },

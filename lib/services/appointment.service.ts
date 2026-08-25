@@ -13,6 +13,7 @@ import { sendWhatsAppMessage } from "@/lib/notifications/whatsapp";
 import { notificationTemplates } from "@/lib/notifications/templates";
 import { triggerWaitlist } from "@/lib/services/waitlist.service";
 import { predictNoShow } from "@/lib/services/prediction.service";
+import { AppError } from "@/lib/security/errors";
 
 export async function getAppointments(
   clinicId: string,
@@ -23,17 +24,24 @@ export async function getAppointments(
 
   let filter: Record<string, any> = {};
 
+  /**
+   * Every branch must constrain the query. An unrecognised role used to
+   * fall through with `filter = {}` and receive every appointment in the
+   * database, so the default is now to deny.
+   */
   if (userRole === "doctor") {
     filter.doctorId = userId;
     filter.clinicId = clinicId;
   } else if (userRole === "patient") {
     filter.patientId = userId;
+    filter.clinicId = clinicId;
   } else if (userRole === "admin" || userRole === "receptionist") {
     filter.clinicId = clinicId;
+  } else {
+    return [];
   }
-  try {
-    // admin and receptionist get no extra filter — they see all
 
+  try {
     return await Appointment.find(filter)
       .populate("patientId", "name email phone")
       .populate("doctorId", "name email phone")
@@ -63,9 +71,53 @@ export async function getAppointment(id: string) {
 
 export async function createAppointment(
   data: CreateAppointmentInput,
-  userRole: string,
+  session: { userId: string; role: string; clinicId?: string },
 ) {
   await connectDB();
+
+  const userRole = session.role;
+
+  /**
+   * Booking authorization.
+   *
+   * patientId, doctorId, and clinicId all arrived from the request body
+   * and were used as-is, so any signed-in account could book an
+   * appointment for any other person, with any doctor, at any clinic on
+   * the platform — and each booking sends WhatsApp messages to the
+   * people named in it. The ids are now checked against the session
+   * before anything is written.
+   */
+  if (!session.clinicId || data.clinicId !== session.clinicId) {
+    throw new AppError("You can only book within your own clinic", 403);
+  }
+
+  if (userRole === "patient" && data.patientId !== session.userId) {
+    throw new AppError("You can only book appointments for yourself", 403);
+  }
+
+  const [patientInClinic, doctorInClinic] = await Promise.all([
+    User.exists({
+      _id: data.patientId,
+      role: "patient",
+      clinicId: session.clinicId,
+    }),
+    User.exists({
+      _id: data.doctorId,
+      role: "doctor",
+      clinicId: session.clinicId,
+    }),
+  ]);
+
+  if (!patientInClinic) {
+    throw new AppError("Patient not found at this clinic", 404);
+  }
+
+  // Also stops a booking being filed against a doctor id that is really
+  // an admin or another patient.
+  if (!doctorInClinic) {
+    throw new AppError("Doctor not found at this clinic", 404);
+  }
+
   try {
     // This is a basic conflict check to prevent
     // overlapping appointments for the same doctor.
@@ -94,13 +146,29 @@ export async function createAppointment(
       );
     }
 
-    // Run prediction before creating the appointment.
-    // The no-show risk score gets saved directly on the document
-    const noShowRisk = await predictNoShow(
+    /**
+     * Score the appointment before creating it, so the risk is stored on
+     * the document.
+     *
+     * The prediction is explicitly non-fatal. It runs third-party numeric
+     * code and reads a model out of the database; none of that should be
+     * able to stop a patient booking an appointment. A failure here means
+     * the appointment is saved without a risk score, and the dashboard
+     * shows "—" for it.
+     */
+    const assessment = await predictNoShow(
       data.patientId,
       new Date(data.date),
       new Date(),
-    );
+      data.timeSlot,
+    ).catch((err) => {
+      console.error("[appointments] no-show prediction failed", err);
+      return null;
+    });
+
+    // Left undefined when no model is trained yet, rather than stored as
+    // a made-up 0.5 that the UI would render as a real "50% risk".
+    const noShowRisk = assessment?.score;
 
     const [patient, doctor, clinic] = await Promise.all([
       User.findById(data.patientId).lean(),
@@ -215,8 +283,15 @@ export async function createAppointment(
       }
     }
 
-    // extra nudge for high risk patients
-    if (noShowRisk >= 0.7 && patient?.phone && clinic) {
+    /**
+     * Extra nudge for high risk patients.
+     *
+     * The cut-off is the one chosen against held-out data during training
+     * and stored with the model, not a hardcoded 0.7. It also cannot fire
+     * when no model is trained — previously the untrained fallback score
+     * was a constant 0.5, so this branch was simply unreachable.
+     */
+    if (assessment?.highRisk && patient?.phone && clinic) {
       const notification = notificationTemplates.highRiskReminder(
         patient.name,
         formattedDate,

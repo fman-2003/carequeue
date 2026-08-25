@@ -3,7 +3,6 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
-import { getToken } from "@/lib/auth/getSession";
 import PageWrapper from "@/components/layout/PageWrapper";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 
@@ -55,12 +54,8 @@ export default function VisitRecordPage({
     async function fetchData() {
       try {
         const [apptRes, visitRes] = await Promise.all([
-          fetch(`/api/appointments/${appointmentId}`, {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
-          fetch(`/api/ehr/visits/${appointmentId}`, {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
+          fetch(`/api/appointments/${appointmentId}`),
+          fetch(`/api/ehr/visits/${appointmentId}`),
         ]);
 
         const apptData = await apptRes.json();
@@ -72,7 +67,6 @@ export default function VisitRecordPage({
           // fetch patient's medical profile for reference
           const profileRes = await fetch(
             `/api/ehr/profile?patientId=${apptData.appointment.patientId?._id}`,
-            { headers: { Authorization: `Bearer ${getToken()}` } },
           );
           const profileData = await profileRes.json();
           setProfile(profileData.profile);
@@ -158,7 +152,6 @@ export default function VisitRecordPage({
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify(payload),
       });

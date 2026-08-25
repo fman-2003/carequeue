@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
-import { getToken } from "@/lib/auth/getSession";
+import { getRole, getClinicId } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import ConfirmModal from "@/components/ConfirmModal";
 import Pagination from "@/components/ui/Pagination";
@@ -14,24 +14,15 @@ import PageWrapper from "@/components/layout/PageWrapper";
 
 const ITEMS_PER_PAGE = 15;
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getRoleFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).role;
-  } catch {
-    return "";
-  }
+  return getRole();
 }
 
 function getClinicIdFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-  try {
-    return JSON.parse(atob(token.split(".")[1])).clinicId || null;
-  } catch {
-    return null;
-  }
+  return getClinicId();
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -156,9 +147,7 @@ export default function AppointmentsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    fetch("/api/appointments", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/appointments")
       .then((r) => r.json())
       .then((data) => {
         if (data.error) {
@@ -220,7 +209,6 @@ export default function AppointmentsPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ status }),
       });

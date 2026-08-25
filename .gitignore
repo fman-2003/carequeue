@@ -49,3 +49,10 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 /playwright/.auth/
+
+# debug output (can contain paths, tokens, and request detail)
+debug.log
+*.log
+
+# local model artifacts
+/models/

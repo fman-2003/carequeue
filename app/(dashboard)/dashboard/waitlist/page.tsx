@@ -3,7 +3,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { getToken } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
 import PageTour from "@/components/ui/PageTour";
 import { TOURS } from "@/lib/tour";
@@ -29,7 +28,6 @@ function Countdown({
 
       await fetch(`/api/waitlist/${waitlistId}/expire`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
       });
 
       onExpired();
@@ -168,9 +166,7 @@ export default function WaitlistPage() {
 
   async function fetchWaitlist() {
     try {
-      const res = await fetch("/api/waitlist", {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const res = await fetch("/api/waitlist");
       const data = await res.json();
 
       if (data.error) {
@@ -202,12 +198,8 @@ export default function WaitlistPage() {
 
     try {
       const [apptRes, waitlistRes] = await Promise.all([
-        fetch("/api/appointments", {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
-        fetch("/api/waitlist", {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
+        fetch("/api/appointments"),
+        fetch("/api/waitlist"),
       ]);
 
       const apptData = await apptRes.json();
@@ -242,7 +234,6 @@ export default function WaitlistPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ appointmentId }),
       });

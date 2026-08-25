@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getToken, saveToken } from "@/lib/auth/getSession";
+import { fetchSession } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
 import InviteCodesSection from "@/components/clinic/InviteCodeSection";
 import PageWrapper from "@/components/layout/PageWrapper";
@@ -79,9 +79,7 @@ export default function CreateClinicPage() {
   });
 
   useEffect(() => {
-    fetch("/api/clinics/mine", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/clinics/mine")
       .then((r) => r.json())
       .then((data) => {
         if (data.clinic) setExistingClinic(data.clinic);
@@ -91,12 +89,9 @@ export default function CreateClinicPage() {
 
   useEffect(() => {
     if (!existingClinic) {
-      fetch("/api/users/me", {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      })
+      fetch("/api/users/me")
         .then((r) => r.json())
         .then((userData) => {
-          console.log("this is the userdata to save email", userData);
           setForm((prev) => ({
             ...prev,
             email: userData.user.email,
@@ -125,7 +120,6 @@ export default function CreateClinicPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify(form),
       });
@@ -136,9 +130,9 @@ export default function CreateClinicPage() {
         return;
       }
 
-      if (data.token) {
-        saveToken(data.token);
-      }
+      // Creating a clinic changes the clinicId claim, so the server
+      // re-issued the session cookie. Refresh the cached display fields.
+      await fetchSession();
 
       setSuccess("Clinic created successfully ✅");
       setExistingClinic(data.clinic);

@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
-import { isAuthenticated, clearToken, getToken } from "@/lib/auth/getSession";
+import { fetchSession, logout } from "@/lib/auth/getSession";
 import AISchedulingPanel from "@/components/layout/AISchedulingPanel";
 import AppBar from "@/components/layout/AppBar";
 import DashboardOutlinedIcon from "@mui/icons-material/DashboardOutlined";
@@ -28,25 +28,13 @@ interface NavLink {
   Icon: SvgIconComponent;
 }
 
-function getRoleFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).role;
-  } catch {
-    return "";
-  }
-}
-
-function getNameFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).name;
-  } catch {
-    return "";
-  }
-}
+/**
+ * The layout used to read the role by base64-decoding the JWT from
+ * localStorage — an unverified claim from a token the client could also
+ * edit. It now asks the server, which reads the signed session cookie.
+ * The nav is cosmetic either way: every route enforces its own role and
+ * clinic checks.
+ */
 
 const NAV_LINKS: Record<string, NavLink[]> = {
   admin: [
@@ -146,20 +134,32 @@ export default function DashboardLayout({
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   useEffect(() => {
-    if (!isAuthenticated()) {
-      router.push("/login");
-      return;
-    }
-    setRole(getRoleFromToken());
-    setName(getNameFromToken());
+    let active = true;
+
+    // Authoritative check on entry: an expired or revoked cookie sends
+    // the user to /login instead of rendering a shell around 401s.
+    fetchSession().then((session) => {
+      if (!active) return;
+      if (!session) {
+        router.push("/login");
+        return;
+      }
+      setRole(session.role);
+      setName(session.name);
+    });
+
+    return () => {
+      active = false;
+    };
   }, [router]);
 
   useEffect(() => {
     setMobileSidebarOpen(false);
   }, [pathname]);
 
-  const handleLogout = () => {
-    clearToken();
+  const handleLogout = async () => {
+    // The cookie is httpOnly, so only the server can clear it.
+    await logout();
     router.push("/login");
   };
 

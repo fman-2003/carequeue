@@ -3,8 +3,19 @@ dotenv.config({ path: ".env.local" });
 
 import mongoose from "mongoose";
 
-const uri = process.env.MONGODB_URI!;
-console.log("Connecting with URI:", uri);
+const uri = process.env.MONGODB_URI;
+
+if (!uri) {
+  console.error("MONGODB_URI is not set");
+  process.exit(1);
+}
+
+/**
+ * The full URI was printed here, which puts the database username and
+ * password into the terminal, into scrollback, and into any CI log this
+ * ever runs in. Only the host is shown — that is all this check needs.
+ */
+console.log("Connecting to:", new URL(uri).host);
 
 mongoose
   .connect(uri)

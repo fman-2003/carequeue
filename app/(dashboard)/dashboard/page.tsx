@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getToken } from "@/lib/auth/getSession";
+import { getRole, getClinicId } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import { useAnalytics } from "@/lib/hooks/useAnalytics";
 import VolumeLineChart from "@/components/charts/VolumeLineChart";
@@ -16,25 +16,15 @@ import PageTour from "@/components/ui/PageTour";
 import { TOURS } from "@/lib/tour";
 import PageWrapper from "@/components/layout/PageWrapper";
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getRoleFromToken(): string {
-  const token = getToken();
-  console.log("Token in DashboardPage:", token);
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).role;
-  } catch {
-    return "";
-  }
+  return getRole();
 }
 
 function getClinicIdFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-  try {
-    return JSON.parse(atob(token.split(".")[1])).clinicId || null;
-  } catch {
-    return null;
-  }
+  return getClinicId();
 }
 
 function AdminOverview() {
@@ -45,9 +35,7 @@ function AdminOverview() {
   const { data, analyticsLoading, error } = useAnalytics();
 
   useEffect(() => {
-    fetch("/api/appointments", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/appointments")
       .then((r) => r.json())
       .then((data) => {
         const appointments = data.appointments || [];
@@ -151,9 +139,7 @@ function DoctorOverview() {
   const { data, analyticsLoading, error } = useAnalytics();
 
   useEffect(() => {
-    fetch("/api/appointments", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/appointments")
       .then((r) => r.json())
       .then((data) => setAppointments(data.appointments || []))
       .finally(() => setLoading(false));
@@ -306,12 +292,8 @@ function PatientOverview() {
     async function fetchData() {
       try {
         const [apptRes, profileRes] = await Promise.all([
-          fetch("/api/appointments", {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
-          fetch("/api/users/me", {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
+          fetch("/api/appointments"),
+          fetch("/api/users/me"),
         ]);
 
         const apptData = await apptRes.json();

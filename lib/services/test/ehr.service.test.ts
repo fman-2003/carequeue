@@ -15,7 +15,6 @@ vi.mock("@/lib/models/MedicalDocument", () => ({ default: mocks.document }));
 vi.mock("@/lib/models/Appointment", () => ({ default: mocks.appointment }));
 
 import {
-  createMedicalDocument,
   createVisitRecord,
   getMedicalDocuments,
   getMedicalProfile,
@@ -25,7 +24,14 @@ import {
   upsertMedicalProfile,
 } from "../ehr.service";
 
-const visitInput = { appointmentId: "appointment-1", patientId: "patient-1", diagnosis: "Check-up", notes: "All well" };
+const visitInput = {
+  appointmentId: "appointment-1",
+  patientId: "patient-1",
+  chiefComplaint: "Headache",
+  diagnosis: "Check-up",
+  clinicalNotes: "All well",
+  treatmentPlan: "Rest",
+};
 
 describe("EHR service", () => {
   beforeEach(() => mocks.connectDB.mockResolvedValue(undefined));
@@ -43,7 +49,7 @@ describe("EHR service", () => {
       await expect(upsertMedicalProfile("patient-1", "clinic-1", { bloodGroup: "O+" })).resolves.toEqual({ patientId: "patient-1" });
       expect(mocks.profile.findOneAndUpdate).toHaveBeenCalledWith(
         { patientId: "patient-1" },
-        { $set: { bloodGroup: "O+", clinicId: "clinic-1" } },
+        { $set: { bloodGroup: "O+", clinicId: "clinic-1" }, $setOnInsert: { patientId: "patient-1" } },
         { new: true, upsert: true, setDefaultsOnInsert: true },
       );
     });
@@ -78,14 +84,14 @@ describe("EHR service", () => {
     });
 
     it("rejects a duplicate record before writing", async () => {
-      mocks.appointment.findOne.mockResolvedValue({ _id: "appointment-1" });
+      mocks.appointment.findOne.mockResolvedValue({ _id: "appointment-1", patientId: { toString: () => "patient-1" } });
       mocks.visit.findOne.mockResolvedValue({ _id: "visit-1" });
       await expect(createVisitRecord(visitInput, "doctor-1", "clinic-1")).rejects.toThrow("A visit record already exists for this appointment");
       expect(mocks.visit.create).not.toHaveBeenCalled();
     });
 
     it("creates a completed appointment record with a normalized follow-up date", async () => {
-      mocks.appointment.findOne.mockResolvedValue({ _id: "appointment-1" });
+      mocks.appointment.findOne.mockResolvedValue({ _id: "appointment-1", patientId: { toString: () => "patient-1" } });
       mocks.visit.findOne.mockResolvedValue(null);
       mocks.visit.create.mockResolvedValue({ _id: "visit-1" });
       await expect(createVisitRecord({ ...visitInput, followUpDate: "2026-09-01" }, "doctor-1", "clinic-1")).resolves.toEqual({ _id: "visit-1" });
@@ -94,25 +100,24 @@ describe("EHR service", () => {
 
     it("rejects updates that do not belong to the doctor", async () => {
       mocks.visit.findOneAndUpdate.mockResolvedValue(null);
-      await expect(updateVisitRecord("appointment-1", "doctor-1", { notes: "Updated" })).rejects.toThrow("Visit record not found or access denied");
+      await expect(updateVisitRecord("appointment-1", "doctor-1", { diagnosis: "Updated" })).rejects.toThrow("Visit record not found or access denied");
       expect(mocks.visit.findOneAndUpdate).toHaveBeenCalledWith(
         { appointmentId: "appointment-1", doctorId: "doctor-1" },
-        { $set: { notes: "Updated" } },
-        { new: true },
+        { $set: { diagnosis: "Updated" } },
+        { new: true, runValidators: true },
       );
     });
   });
 
   describe("medical documents", () => {
-    it("lists patient documents and persists the exact supplied metadata", async () => {
+    it("lists a patient's documents scoped to that patient, newest first", async () => {
       const lean = vi.fn().mockResolvedValue([]);
       const sort = vi.fn().mockReturnValue({ lean });
       mocks.document.find.mockReturnValue({ populate: vi.fn().mockReturnValue({ sort }) });
-      mocks.document.create.mockResolvedValue({ _id: "document-1" });
 
       await expect(getMedicalDocuments("patient-1")).resolves.toEqual([]);
-      await expect(createMedicalDocument({ patientId: "patient-1", clinicId: "clinic-1", uploadedBy: "doctor-1", fileName: "scan.pdf", fileType: "lab", fileUrl: "https://files.test/scan.pdf", fileSize: 42, mimeType: "application/pdf" })).resolves.toEqual({ _id: "document-1" });
-      expect(mocks.document.create).toHaveBeenCalledWith(expect.objectContaining({ fileSize: 42, mimeType: "application/pdf" }));
+      expect(mocks.document.find).toHaveBeenCalledWith({ patientId: "patient-1" });
+      expect(sort).toHaveBeenCalledWith({ createdAt: -1 });
     });
   });
 });

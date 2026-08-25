@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getToken } from "@/lib/auth/getSession";
+import { getRole, getUserId } from "@/lib/auth/getSession";
 import DocumentsSection from "@/components/ehr/DocumentsSection";
 import PageTour from "@/components/ui/PageTour";
 import { TOURS } from "@/lib/tour";
@@ -12,24 +12,15 @@ import PageWrapper from "@/components/layout/PageWrapper";
 const BLOOD_GROUPS = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
 const GENOTYPES = ["AA", "AS", "SS", "AC", "SC"];
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getRoleFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).role;
-  } catch {
-    return "";
-  }
+  return getRole();
 }
 
 function getUserIdFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).userId;
-  } catch {
-    return "";
-  }
+  return getUserId();
 }
 
 export default function HealthProfilePage() {
@@ -47,9 +38,7 @@ export default function HealthProfilePage() {
   const [newFamily, setNewFamily] = useState("");
 
   useEffect(() => {
-    fetch("/api/ehr/profile", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/ehr/profile")
       .then((r) => r.json())
       .then((data) => {
         setProfile(data.profile);
@@ -71,14 +60,12 @@ export default function HealthProfilePage() {
     setSaving(true);
     setMessage("");
     setError("");
-    console.log(form);
 
     try {
       const res = await fetch("/api/ehr/profile", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           ...form,

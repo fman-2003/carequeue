@@ -17,6 +17,7 @@ export interface IClinic extends Document {
     code: string;
     role: "doctor" | "receptionist";
     usedBy: mongoose.Types.ObjectId | null;
+    expiresAt?: Date;
     isUsed: boolean;
     createdAt: Date;
   }[];
@@ -49,6 +50,10 @@ const ClinicSchema = new Schema<IClinic>(
           },
           usedBy: { type: Schema.Types.ObjectId, ref: "User", default: null },
           isUsed: { type: Boolean, default: false },
+          // Unredeemed codes stop working after their window; see
+          // clinics/invite. Undefined means a code issued before expiry
+          // existed, which signupUser treats as still valid.
+          expiresAt: { type: Date },
           createdAt: { type: Date, default: Date.now },
         },
       ],

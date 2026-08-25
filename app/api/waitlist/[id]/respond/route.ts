@@ -1,18 +1,34 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { authenticate } from "@/lib/auth/middleware";
+import {
+  authenticate,
+  assertSameOrigin,
+  requireRole,
+  isValidObjectId,
+  badRequest,
+} from "@/lib/auth/middleware";
 import { respondToWaitlistSchema } from "@/lib/validations/waitlist.schema";
 import { respondToWaitlist } from "@/lib/services/waitlist.service";
+import { handleServiceError, readJson } from "@/lib/security/errors";
 
-type Params = { params: Promise<{ id: string }> }
+type Params = { params: Promise<{ id: string }> };
 
 export async function POST(req: NextRequest, { params }: Params) {
+  const originError = assertSameOrigin(req);
+  if (originError) return originError;
+
   const { payload, error } = authenticate(req);
   if (error) return error;
+
+  // Accepting or declining a slot offer belongs to the patient it was
+  // offered to; staff have their own scheduling routes.
+  const roleError = requireRole(payload.role, ["patient"]);
+  if (roleError) return roleError;
+
   const { id } = await params;
+  if (!isValidObjectId(id)) return badRequest("Invalid waitlist entry id");
 
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const parsed = respondToWaitlistSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -21,13 +37,15 @@ export async function POST(req: NextRequest, { params }: Params) {
       );
     }
 
+    // respondToWaitlist matches on { _id, patientId }, so the entry must
+    // belong to the caller.
     const result = await respondToWaitlist(
       id,
-      payload!.userId,
+      payload.userId,
       parsed.data.response,
     );
     return NextResponse.json(result);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+  } catch (err) {
+    return handleServiceError("waitlist/[id]/respond POST", err, 400);
   }
 }

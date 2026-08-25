@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getToken } from "@/lib/auth/getSession";
+import { getClinicId } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import SearchInput from "@/components/ui/SearchInput";
 import PageTour from "@/components/ui/PageTour";
@@ -25,22 +25,17 @@ export default function UsersPage() {
   const [doctorStats, setDoctorStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(false);
 
-  function getClinicIdFromToken(): string | null {
-    const token = getToken();
-    if (!token) return null;
-    try {
-      return JSON.parse(atob(token.split(".")[1])).clinicId || null;
-    } catch {
-      return null;
-    }
-  }
+  // Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
+function getClinicIdFromToken(): string | null {
+  return getClinicId();
+}
 
   const clinicId = getClinicIdFromToken();
 
   useEffect(() => {
-    fetch("/api/admin/users", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/admin/users")
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
@@ -70,7 +65,6 @@ export default function UsersPage() {
       const res = await fetch(
         "/api/admin/doctor-stats?doctorId=" + doctor._id,
         {
-          headers: { Authorization: `Bearer ${getToken()}` },
         },
       );
       const data = await res.json();

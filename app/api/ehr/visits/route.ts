@@ -1,44 +1,51 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { authenticate, requireRole } from "@/lib/auth/middleware";
+import {
+  authenticate,
+  assertSameOrigin,
+  requireRole,
+  requireClinic,
+} from "@/lib/auth/middleware";
+import { resolvePatientAccess } from "@/lib/auth/access";
 import { visitRecordSchema } from "@/lib/validations/ehr.schema";
 import { getVisitRecords, createVisitRecord } from "@/lib/services/ehr.service";
+import { handleServiceError, readJson } from "@/lib/security/errors";
 
 export async function GET(req: NextRequest) {
   const { payload, error } = authenticate(req);
   if (error) return error;
 
   const { searchParams } = new URL(req.url);
-  const patientId =
-    payload!.role === "patient"
-      ? payload!.userId
-      : searchParams.get("patientId");
 
-  if (!patientId) {
-    return NextResponse.json(
-      { error: "patientId is required" },
-      { status: 400 },
-    );
-  }
+  const access = await resolvePatientAccess(
+    payload,
+    searchParams.get("patientId"),
+  );
+  if (access.error) return access.error;
 
   try {
-    const records = await getVisitRecords(patientId);
+    const records = await getVisitRecords(access.patientId);
     return NextResponse.json({ records });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    return handleServiceError("ehr/visits GET", err, 500);
   }
 }
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req);
+  if (originError) return originError;
+
   const { payload, error } = authenticate(req);
   if (error) return error;
 
   // only doctors can create visit records
-  const roleError = requireRole(payload!.role, ["doctor"]);
+  const roleError = requireRole(payload.role, ["doctor"]);
   if (roleError) return roleError;
 
+  const { clinicId, error: clinicError } = requireClinic(payload);
+  if (clinicError) return clinicError;
+
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const parsed = visitRecordSchema.safeParse(body);
 
     if (!parsed.success) {
@@ -48,14 +55,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // The record names a patient, so confirm that patient belongs to this
+    // doctor's clinic before writing clinical notes against their id.
+    const access = await resolvePatientAccess(payload, parsed.data.patientId);
+    if (access.error) return access.error;
+
     const record = await createVisitRecord(
       parsed.data,
-      payload!.userId,
-      payload!.clinicId!,
+      payload.userId,
+      clinicId,
     );
 
     return NextResponse.json({ record }, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+  } catch (err) {
+    return handleServiceError("ehr/visits POST", err, 400);
   }
 }

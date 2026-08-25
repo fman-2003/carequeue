@@ -3,7 +3,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getToken } from "@/lib/auth/getSession";
 import SearchInput from "@/components/ui/SearchInput";
 import Pagination from "@/components/ui/Pagination";
 import PageTour from "@/components/ui/PageTour";
@@ -26,9 +25,7 @@ export default function MyRecordsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
-    fetch("/api/ehr/visits/my-records", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/ehr/visits/my-records")
       .then((r) => r.json())
       .then((data) => setRecords(data.records || []))
       .finally(() => setLoading(false));

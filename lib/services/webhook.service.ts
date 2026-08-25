@@ -487,7 +487,7 @@ async function handleButtonAccept(user: any, waitlistId: string) {
       "ACCEPT",
     );
     // respondToWaitlist handles all notifications internally
-    console.log("Waitlist accept processed:", result);
+    void result;
   } catch (err: any) {
     await sendWhatsAppMessage({
       to: user.phone,

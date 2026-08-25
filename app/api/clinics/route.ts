@@ -1,21 +1,36 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { authenticate, requireRole } from "@/lib/auth/middleware";
+import {
+  authenticate,
+  assertSameOrigin,
+  requireRole,
+  forbidden,
+} from "@/lib/auth/middleware";
 import { createClinicSchema } from "@/lib/validations/clinic.schema";
 import { createClinic } from "@/lib/services/clinic.service";
 import { signToken } from "@/lib/auth/jwt";
-// import User from "@/lib/models/User";
+import { setSessionCookie } from "@/lib/auth/session";
+import { handleServiceError, readJson } from "@/lib/security/errors";
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req);
+  if (originError) return originError;
+
   const { payload, error } = authenticate(req);
   if (error) return error;
 
   // only admins can register a clinic
-  const roleError = requireRole(payload!.role, ["admin"]);
+  const roleError = requireRole(payload.role, ["admin"]);
   if (roleError) return roleError;
 
+  // An admin owns exactly one clinic. Without this, one account could
+  // create clinics indefinitely and mint itself a new clinic scope each
+  // time.
+  if (payload.clinicId) {
+    return forbidden("Your account is already linked to a clinic");
+  }
+
   try {
-    const body = await req.json();
+    const body = await readJson(req);
     const parsed = createClinicSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -24,16 +39,20 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const clinic = await createClinic(parsed.data, payload!.userId);
-    const newToken = signToken({
-      userId: payload!.userId,
-      email: payload!.email,
-      role: payload!.role,
+    const clinic = await createClinic(parsed.data, payload.userId);
+
+    const token = signToken({
+      userId: payload.userId,
+      email: payload.email,
+      role: payload.role,
       clinicId: clinic._id.toString(),
     });
 
-    return NextResponse.json({ clinic, token: newToken }, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 400 });
+    return setSessionCookie(
+      NextResponse.json({ clinic }, { status: 201 }),
+      token,
+    );
+  } catch (err) {
+    return handleServiceError("clinics POST", err, 400);
   }
 }

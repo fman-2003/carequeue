@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { getToken } from "@/lib/auth/getSession";
+import { getClinicId, getUserId } from "@/lib/auth/getSession";
 import { motion } from "framer-motion";
 interface Message {
   role: "user" | "assistant";
@@ -27,12 +27,9 @@ export default function AISchedulingPanel() {
   const bottomRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const token = getToken();
-    if (!token) return;
-    try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      setClinicId(payload.clinicId || "");
-    } catch {}
+    // From the cached session hint. The scheduling API checks this
+    // against the caller’s own clinic and rejects a mismatch.
+    setClinicId(getClinicId() || "");
   }, []);
 
   // scroll to bottom when messages update
@@ -80,7 +77,6 @@ export default function AISchedulingPanel() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           clinicId,
@@ -130,17 +126,13 @@ export default function AISchedulingPanel() {
     setSuggestions([]);
 
     try {
-      const token = getToken();
-      if (!token) return;
-
-      const payload = JSON.parse(atob(token.split(".")[1]));
-      const patientId = payload.userId;
+      const patientId = getUserId();
+      if (!patientId) return;
 
       const res = await fetch("/api/appointments", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           patientId,
