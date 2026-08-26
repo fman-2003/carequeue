@@ -335,7 +335,10 @@ export function evaluateAt(
     accuracy: scores.length > 0 ? (tp + tn) / scores.length : 0,
     precision,
     recall,
-    f1: precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0,
+    f1:
+      precision + recall > 0
+        ? (2 * precision * recall) / (precision + recall)
+        : 0,
     auc: rankAuc(scores, labels),
   };
 }
