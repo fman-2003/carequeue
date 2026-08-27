@@ -3,10 +3,18 @@ import MedicalProfile from "@/lib/models/MedicalProfile";
 import VisitRecord from "@/lib/models/VisitRecord";
 import MedicalDocument from "@/lib/models/MedicalDocument";
 import Appointment from "@/lib/models/Appointment";
+import { AppError } from "@/lib/security/errors";
 import {
   MedicalProfileInput,
   VisitRecordInput,
+  UpdateVisitRecordInput,
 } from "@/lib/validations/ehr.schema";
+
+/**
+ * These functions assume the caller has already been authorized against
+ * the patient — see lib/auth/access.ts. They do not re-derive access,
+ * so every route that reaches them must resolve the patient first.
+ */
 
 // MEDICAL PROFILE
 export async function getMedicalProfile(patientId: string) {
@@ -24,7 +32,10 @@ export async function upsertMedicalProfile(
 
   return await MedicalProfile.findOneAndUpdate(
     { patientId },
-    { $set: { ...data, clinicId } },
+    // patientId and clinicId are set from the server's own values on
+    // insert; `data` has already been through the schema, so it cannot
+    // carry either field.
+    { $set: { ...data, clinicId }, $setOnInsert: { patientId } },
     { new: true, upsert: true, setDefaultsOnInsert: true },
   );
 }
@@ -54,6 +65,11 @@ export async function createVisitRecord(
 ) {
   await connectDB();
 
+  /**
+   * The appointment must be this doctor's and already completed. This is
+   * also what ties the record to a real clinical encounter rather than
+   * letting a doctor write notes against an arbitrary appointment id.
+   */
   const appointment = await Appointment.findOne({
     _id: data.appointmentId,
     doctorId,
@@ -61,14 +77,29 @@ export async function createVisitRecord(
   });
 
   if (!appointment) {
-    throw new Error("Appointment not found, not yours, or not yet completed");
+    throw new AppError(
+      "Appointment not found, not yours, or not yet completed",
+      404,
+    );
+  }
+
+  // The record's patient must be the appointment's patient — otherwise a
+  // valid appointment could be used to file notes on a third party.
+  if (appointment.patientId.toString() !== data.patientId) {
+    throw new AppError(
+      "This patient is not the patient on the appointment",
+      400,
+    );
   }
 
   const existing = await VisitRecord.findOne({
     appointmentId: data.appointmentId,
   });
   if (existing) {
-    throw new Error("A visit record already exists for this appointment");
+    throw new AppError(
+      "A visit record already exists for this appointment",
+      409,
+    );
   }
 
   return await VisitRecord.create({
@@ -83,18 +114,27 @@ export async function createVisitRecord(
 export async function updateVisitRecord(
   appointmentId: string,
   doctorId: string,
-  data: Partial<VisitRecordInput>,
+  data: UpdateVisitRecordInput,
 ) {
   await connectDB();
 
+  // Scoped to the authoring doctor: one clinician cannot rewrite
+  // another's clinical notes.
   const record = await VisitRecord.findOneAndUpdate(
     { appointmentId, doctorId },
-    { $set: data },
-    { new: true },
+    {
+      $set: {
+        ...data,
+        ...(data.followUpDate
+          ? { followUpDate: new Date(data.followUpDate) }
+          : {}),
+      },
+    },
+    { new: true, runValidators: true },
   );
 
   if (!record) {
-    throw new Error("Visit record not found or access denied");
+    throw new AppError("Visit record not found or access denied", 404);
   }
 
   return record;
@@ -107,20 +147,4 @@ export async function getMedicalDocuments(patientId: string) {
     .populate("uploadedBy", "name role")
     .sort({ createdAt: -1 })
     .lean();
-}
-
-export async function createMedicalDocument(data: {
-  patientId: string;
-  clinicId: string;
-  uploadedBy: string;
-  appointmentId?: string;
-  fileName: string;
-  fileType: string;
-  fileUrl: string;
-  fileSize: number;
-  mimeType: string;
-  description?: string;
-}) {
-  await connectDB();
-  return await MedicalDocument.create(data);
 }

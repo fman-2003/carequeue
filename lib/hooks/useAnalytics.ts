@@ -2,7 +2,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getToken } from "@/lib/auth/getSession";
 
 export interface AnalyticsData {
   appointments: any[];
@@ -25,9 +24,7 @@ export function useAnalytics() {
   useEffect(() => {
     async function fetchAndCompute() {
       try {
-        const res = await fetch("/api/appointments", {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
+        const res = await fetch("/api/appointments");
         const json = await res.json();
 
         if (json.error) {

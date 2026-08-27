@@ -117,9 +117,11 @@ export async function triggerWaitlist(
     return entryDateTime.getTime() > freedSlotDateTime.getTime();
   });
 
-  console.log("Freed slot:", freedSlotDateTime);
-  console.log("Freed Date:", freedDate);
-  console.log("Next candidate:", next);
+  // The candidate document holds patient identifiers, so only the
+  // outcome is logged, not the record.
+  console.log(
+    `Waitlist: slot freed at ${freedSlotDateTime}; ${next ? "offering to next candidate" : "no candidate waiting"}`,
+  );
 
   if (!next) return null;
 

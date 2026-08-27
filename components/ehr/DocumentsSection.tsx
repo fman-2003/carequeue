@@ -3,7 +3,6 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { getToken } from "@/lib/auth/getSession";
 
 const FILE_TYPES = [
   { value: "lab_result", label: "Lab Result" },
@@ -46,9 +45,7 @@ export default function DocumentsSection({
         ? `/api/ehr/documents?patientId=${patientId}`
         : "/api/ehr/documents";
 
-      const res = await fetch(url, {
-        headers: { Authorization: `Bearer ${getToken()}` },
-      });
+      const res = await fetch(url);
       const data = await res.json();
       setDocuments(data.documents || []);
     } finally {
@@ -93,7 +90,6 @@ export default function DocumentsSection({
 
       const res = await fetch("/api/ehr/documents", {
         method: "POST",
-        headers: { Authorization: `Bearer ${getToken()}` },
         // NOTE: do NOT set Content-Type here
         // the browser sets it automatically with the correct
         // multipart boundary when body is FormData
@@ -122,7 +118,6 @@ export default function DocumentsSection({
     try {
       const res = await fetch(`/api/ehr/documents/${docId}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${getToken()}` },
       });
       if (res.ok) {
         setDocuments((prev) => prev.filter((d) => d._id !== docId));

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
 import Image from "next/image";
-import { saveToken } from "@/lib/auth/getSession";
+import { cacheSessionHint } from "@/lib/auth/getSession";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -62,7 +62,6 @@ export default function SignupPage() {
 
       const data = await res.json();
 
-      console.log("Form data:", form);
       if (!res.ok) {
         setError(
           typeof data.error === "object"
@@ -71,7 +70,8 @@ export default function SignupPage() {
         );
         return;
       }
-      saveToken(data.token);
+      // Session cookie is set by the server; keep only display fields.
+      cacheSessionHint(data.user);
       router.push("/dashboard");
     } catch {
       setError("Something went wrong. Please try again.");

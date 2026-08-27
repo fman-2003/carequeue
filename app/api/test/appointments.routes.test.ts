@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   authenticate: vi.fn(),
   requireRole: vi.fn(),
+  requireClinic: vi.fn(),
+  assertSameOrigin: vi.fn(),
   getAppointments: vi.fn(),
   createAppointment: vi.fn(),
   find: vi.fn(),
@@ -10,6 +12,8 @@ const mocks = vi.hoisted(() => ({
 vi.mock("@/lib/auth/middleware", () => ({
   authenticate: mocks.authenticate,
   requireRole: mocks.requireRole,
+  requireClinic: mocks.requireClinic,
+  assertSameOrigin: mocks.assertSameOrigin,
 }));
 vi.mock("@/lib/services/appointment.service", () => ({
   getAppointments: mocks.getAppointments,
@@ -26,6 +30,8 @@ describe("appointments routes", () => {
       error: null,
     });
     mocks.requireRole.mockReturnValue(null);
+    mocks.assertSameOrigin.mockReturnValue(null);
+    mocks.requireClinic.mockReturnValue({ clinicId: "clinic-1", error: null });
   });
 
   it("returns an authentication response before reading the request body", async () => {
@@ -61,9 +67,9 @@ describe("appointments routes", () => {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          patientId: "patient-1",
-          clinicId: "clinic-1",
-          doctorId: "doctor-1",
+          patientId: "652f1a2b3c4d5e6f70819200",
+          clinicId: "652f1a2b3c4d5e6f70819201",
+          doctorId: "652f1a2b3c4d5e6f70819202",
           date: "2026-08-22T09:00:00.000Z",
           timeSlot: "09:00 - 09:30",
         }),
@@ -73,9 +79,11 @@ describe("appointments routes", () => {
       appointment: { _id: "appointment-1" },
     });
     expect(response.status).toBe(201);
+    // The service now receives the verified session, not just a role
+    // string, so it can check who is booking for whom.
     expect(mocks.createAppointment).toHaveBeenCalledWith(
-      expect.objectContaining({ doctorId: "doctor-1" }),
-      "patient",
+      expect.objectContaining({ doctorId: "652f1a2b3c4d5e6f70819202" }),
+      expect.objectContaining({ userId: "patient-1", role: "patient" }),
     );
   });
 

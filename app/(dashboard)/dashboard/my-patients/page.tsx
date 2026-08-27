@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { getToken } from "@/lib/auth/getSession";
+import { getRole, getClinicId } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import SearchInput from "@/components/ui/SearchInput";
 import DocumentsSection from "@/components/ehr/DocumentsSection";
@@ -10,24 +10,15 @@ import PageTour from "@/components/ui/PageTour";
 import { TOURS } from "@/lib/tour";
 import PageWrapper from "@/components/layout/PageWrapper";
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getRoleFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).role;
-  } catch {
-    return "";
-  }
+  return getRole();
 }
 
 function getClinicIdFromToken(): string | null {
-  const token = getToken();
-  if (!token) return null;
-  try {
-    return JSON.parse(atob(token.split(".")[1])).clinicId || null;
-  } catch {
-    return null;
-  }
+  return getClinicId();
 }
 
 export default function MyPatientsPage() {
@@ -48,9 +39,7 @@ export default function MyPatientsPage() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    fetch("/api/doctors/my-patients", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/doctors/my-patients")
       .then((r) => r.json())
       .then((data) => {
         if (data.error) {
@@ -83,12 +72,8 @@ export default function MyPatientsPage() {
 
     try {
       const [profileRes, visitsRes] = await Promise.all([
-        fetch(`/api/ehr/patients/${patient._id}/profile`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
-        fetch(`/api/ehr/patients/${patient._id}/visits`, {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        }),
+        fetch(`/api/ehr/patients/${patient._id}/profile`),
+        fetch(`/api/ehr/patients/${patient._id}/visits`),
       ]);
 
       const profileData = await profileRes.json();

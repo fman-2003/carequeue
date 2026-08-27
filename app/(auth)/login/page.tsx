@@ -4,7 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { saveToken } from "@/lib/auth/getSession";
+import { cacheSessionHint } from "@/lib/auth/getSession";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
 import Image from "next/image";
@@ -43,7 +43,9 @@ export default function LoginPage() {
         return;
       }
 
-      saveToken(data.token);
+      // The session token arrives as an httpOnly cookie set by the
+      // server; only the display fields are kept client-side.
+      cacheSessionHint(data.user);
       router.push("/dashboard");
     } catch (err: any) {
       setError("Something went wrong. Please try again.");

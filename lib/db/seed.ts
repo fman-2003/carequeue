@@ -7,8 +7,51 @@ import Clinic from "../models/Clinic";
 import Appointment from "../models/Appointment";
 import Waitlist from "../models/Waitlist";
 import { faker } from "@faker-js/faker";
+import crypto from "crypto";
+
+/**
+ * Seed credentials.
+ *
+ * The admin password used to be a literal in this file, committed to the
+ * repository. Anything hardcoded here is public to everyone with repo
+ * access — and a password reused from elsewhere is worse still.
+ *
+ * Set SEED_ADMIN_PASSWORD to choose one; otherwise a random password is
+ * generated per run and printed once at the end.
+ */
+const ADMIN_EMAIL = process.env.SEED_ADMIN_EMAIL || "admin@carequeue.local";
+const ADMIN_PASSWORD =
+  process.env.SEED_ADMIN_PASSWORD || generatePassword();
+const STAFF_PASSWORD = process.env.SEED_STAFF_PASSWORD || generatePassword();
+const PATIENT_PASSWORD =
+  process.env.SEED_PATIENT_PASSWORD || generatePassword();
+
+function generatePassword() {
+  // Satisfies the signup policy: length, a letter, and a digit.
+  return "Cq" + crypto.randomBytes(12).toString("base64url").slice(0, 16) + "7";
+}
 
 async function seed() {
+  /**
+   * This script deletes every user, clinic, appointment, and waitlist
+   * entry before writing fixtures. Pointing it at a live database would
+   * destroy real patient data, so it refuses to run unless the caller has
+   * said so explicitly.
+   */
+  if (process.env.NODE_ENV === "production" && !process.env.ALLOW_DESTRUCTIVE_SEED) {
+    console.error(
+      "Refusing to seed with NODE_ENV=production. This wipes all data. Set ALLOW_DESTRUCTIVE_SEED=1 to override.",
+    );
+    process.exit(1);
+  }
+
+  const uri = process.env.MONGODB_URI || "";
+  if (/prod/i.test(uri) && !process.env.ALLOW_DESTRUCTIVE_SEED) {
+    console.error(
+      "MONGODB_URI looks like a production database and this script deletes all data. Set ALLOW_DESTRUCTIVE_SEED=1 to override.",
+    );
+    process.exit(1);
+  }
   let retries = 3;
   while (retries > 0) {
     try {
@@ -35,8 +78,8 @@ async function seed() {
   // ─── ADMIN ───────────────────────────────────
   const admin = await User.create({
     name: "Fulfilment Olatunji",
-    email: "admin@carequeue.com",
-    password: "Fman@2003",
+    email: ADMIN_EMAIL,
+    password: ADMIN_PASSWORD,
     role: "admin",
     phone: "+2348012345678",
   });
@@ -65,7 +108,7 @@ async function seed() {
       User.create({
         name: `Dr. ${faker.person.fullName()}`,
         email: faker.internet.email(),
-        password: "password1234",
+        password: STAFF_PASSWORD,
         role: "doctor",
         phone: `+2348${faker.string.numeric(9)}`,
         clinicId: clinic._id,
@@ -79,7 +122,7 @@ async function seed() {
       User.create({
         name: faker.person.fullName(),
         email: faker.internet.email(),
-        password: "password123",
+        password: PATIENT_PASSWORD,
         role: "patient",
         phone: `+2348${faker.string.numeric(9)}`,
         clinicId: clinic._id,
@@ -166,9 +209,11 @@ async function seed() {
   console.log("─────────────────────────────────────");
   console.log("Seed complete ✅");
   console.log("─────────────────────────────────────");
-  console.log("Admin    → admin@carequeue.com / password123");
-  console.log("Doctors  → check MongoDB Atlas for emails");
-  console.log("Patients → check MongoDB Atlas for emails");
+  console.log("Admin    → " + ADMIN_EMAIL);
+  console.log("Admin pw → " + ADMIN_PASSWORD);
+  console.log("Staff pw → " + STAFF_PASSWORD);
+  console.log("Patient pw → " + PATIENT_PASSWORD);
+  console.log("(Generated per run unless SEED_*_PASSWORD is set. Not stored.)");
   console.log(`Clinic   → ${clinic.name}`);
   console.log("─────────────────────────────────────");
 

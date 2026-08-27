@@ -1,102 +1,145 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { authenticate } from "@/lib/auth/middleware";
+import {
+  authenticate,
+  assertSameOrigin,
+  requireClinic,
+} from "@/lib/auth/middleware";
+import { resolvePatientAccess } from "@/lib/auth/access";
 import { connectDB } from "@/lib/db";
 import MedicalDocument from "@/lib/models/MedicalDocument";
-import cloudinary from "@/lib/config/cloudinary";
+import { documentUploadSchema } from "@/lib/validations/ehr.schema";
+import { validateMedicalDocument } from "@/lib/security/fileValidation";
+import {
+  uploadMedicalDocument,
+  signedAssetUrl,
+} from "@/lib/services/storage.service";
+import { enforceRateLimit, RATE_LIMITS } from "@/lib/security/rateLimit";
+import { handleServiceError } from "@/lib/security/errors";
+
+interface StoredDocument {
+  publicId?: string;
+  resourceType?: "image" | "raw";
+  fileUrl: string;
+}
+
+/** Swaps the stored handle for a freshly signed, short-lived delivery URL. */
+function withDeliveryUrl<T extends StoredDocument>(doc: T) {
+  if (doc.publicId) {
+    return {
+      ...doc,
+      fileUrl: signedAssetUrl(doc.publicId, doc.resourceType ?? "raw"),
+    };
+  }
+  // Legacy document stored before authenticated delivery existed.
+  return doc;
+}
 
 export async function GET(req: NextRequest) {
   const { payload, error } = authenticate(req);
   if (error) return error;
 
-  await connectDB();
-
   const { searchParams } = new URL(req.url);
 
-  // patients fetch their own docs
-  // doctors fetch specific patient documents via ?patientId= query param.
-  const patientId =
-    payload!.role === "patient"
-      ? payload!.userId
-      : searchParams.get("patientId");
+  /**
+   * Previously any signed-in account that was not a patient could pass
+   * `?patientId=` for anyone in the system — including patients at other
+   * clinics — and receive their lab results and scans. Access is now
+   * proven against the caller's identity and clinic.
+   */
+  const access = await resolvePatientAccess(
+    payload,
+    searchParams.get("patientId"),
+  );
+  if (access.error) return access.error;
 
-  if (!patientId) {
-    return NextResponse.json(
-      { error: "patientId is required" },
-      { status: 400 },
-    );
+  try {
+    await connectDB();
+
+    const documents = await MedicalDocument.find({
+      patientId: access.patientId,
+    })
+      .populate("uploadedBy", "name role")
+      .sort({ createdAt: -1 })
+      .lean<StoredDocument[]>();
+
+    return NextResponse.json({ documents: documents.map(withDeliveryUrl) });
+  } catch (err) {
+    return handleServiceError("ehr/documents GET", err, 500);
   }
-
-  const documents = await MedicalDocument.find({ patientId })
-    .populate("uploadedBy", "name role")
-    .sort({ createdAt: -1 })
-    .lean();
-
-  return NextResponse.json({ documents });
 }
 
 export async function POST(req: NextRequest) {
+  const originError = assertSameOrigin(req);
+  if (originError) return originError;
+
   const { payload, error } = authenticate(req);
   if (error) return error;
 
+  const limited = enforceRateLimit(
+    req,
+    "document-upload",
+    RATE_LIMITS.upload,
+    payload.userId,
+  );
+  if (limited) return limited;
+
+  const { clinicId, error: clinicError } = requireClinic(payload);
+  if (clinicError) return clinicError;
+
   try {
     const formData = await req.formData();
-    const file = formData.get("file") as File;
-    const patientId = formData.get("patientId") as string;
-    const fileType = formData.get("fileType") as string;
-    const description = formData.get("description") as string | null;
-    const appointmentId = formData.get("appointmentId") as string | null;
 
-    if (!file || !patientId || !fileType) {
+    const parsed = documentUploadSchema.safeParse({
+      patientId: formData.get("patientId"),
+      fileType: formData.get("fileType"),
+      description: formData.get("description") || undefined,
+      appointmentId: formData.get("appointmentId") || undefined,
+    });
+
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "file, patientId and fileType are required" },
+        { error: parsed.error.flatten().fieldErrors },
         { status: 400 },
       );
     }
 
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
     /**
-     * Upload to Cloudinary.
-     * We use upload_stream for buffer uploads.
-     * folder organises files in Cloudinary dashboard.
-     * resource_type 'auto' handles both PDFs and images.
+     * The upload used to accept any patientId with no check at all, so
+     * one patient could file documents onto another patient's chart.
      */
-    const uploadResult = await new Promise<any>((resolve, reject) => {
-      cloudinary.uploader
-        .upload_stream(
-          {
-            folder: `carequeue/patients/${patientId}`,
-            resource_type: "auto",
-            public_id: `${fileType}_${Date.now()}`,
-            // unique_filename: false, // we generate our own unique filename using timestamp,
-          },
-          (err, result) => {
-            if (err) reject(err);
-            else resolve(result);
-          },
-        )
-        .end(buffer);
+    const access = await resolvePatientAccess(payload, parsed.data.patientId);
+    if (access.error) return access.error;
+
+    // Size, declared type, and actual file signature are all checked
+    // before a single byte reaches Cloudinary.
+    const file = await validateMedicalDocument(formData.get("file"));
+
+    const stored = await uploadMedicalDocument(file.buffer, {
+      patientId: access.patientId,
+      kind: file.kind,
     });
 
     await connectDB();
 
     const document = await MedicalDocument.create({
-      patientId,
-      clinicId: payload!.clinicId,
-      uploadedBy: payload!.userId,
-      appointmentId: appointmentId || undefined,
-      fileName: file.name,
-      fileType,
-      fileUrl: uploadResult.secure_url,
+      patientId: access.patientId,
+      clinicId,
+      uploadedBy: payload.userId,
+      appointmentId: parsed.data.appointmentId || undefined,
+      fileName: file.safeName,
+      fileType: parsed.data.fileType,
+      fileUrl: stored.url,
+      publicId: stored.publicId,
+      resourceType: stored.resourceType,
+      deliveryType: stored.deliveryType,
+      // Recorded from the sniffed bytes, not from the browser's claim.
       fileSize: file.size,
-      mimeType: file.type,
-      description: description || undefined,
+      mimeType: file.kind.mime,
+      description: parsed.data.description || undefined,
     });
 
     return NextResponse.json({ document }, { status: 201 });
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err) {
+    return handleServiceError("ehr/documents POST", err, 400);
   }
 }

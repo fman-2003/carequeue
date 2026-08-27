@@ -75,6 +75,8 @@ export async function sendWhatsAppMessage({
   }
 
   const result = await res.json();
-  console.log(`WhatsApp message queued — SID: ${result.sid}, To: ${to}`);
+  // The recipient number is not logged: application logs are widely
+  // readable and a phone number is patient-identifying.
+  console.log(`WhatsApp message queued — SID: ${result.sid}`);
   return result;
 }

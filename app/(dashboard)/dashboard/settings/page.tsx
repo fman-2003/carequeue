@@ -2,18 +2,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { getToken, saveToken } from "@/lib/auth/getSession";
+import { getRole, fetchSession } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
 import PageWrapper from "@/components/layout/PageWrapper";
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getRoleFromToken(): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1])).role;
-  } catch {
-    return "";
-  }
+  return getRole();
 }
 
 export default function SettingsPage() {
@@ -59,12 +56,8 @@ export default function SettingsPage() {
     async function fetchData() {
       try {
         const [profileRes, clinicsRes] = await Promise.all([
-          fetch("/api/users/me", {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
-          fetch("/api/clinics/all", {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
+          fetch("/api/users/me"),
+          fetch("/api/clinics/all"),
         ]);
 
         const profileData = await profileRes.json();
@@ -81,9 +74,7 @@ export default function SettingsPage() {
 
           // fetch doctors for this clinic if patient
           if (role === "patient") {
-            const usersRes = await fetch("/api/users", {
-              headers: { Authorization: `Bearer ${getToken()}` },
-            });
+            const usersRes = await fetch("/api/users");
             const usersData = await usersRes.json();
             setDoctors(usersData.doctors || []);
 
@@ -114,7 +105,6 @@ export default function SettingsPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ clinicId: selectedClinic }),
       });
@@ -125,18 +115,15 @@ export default function SettingsPage() {
         return;
       }
 
-      if (data.token) {
-        saveToken(data.token);
-      }
+      // Setting a clinic re-issues the session cookie server-side.
+      await fetchSession();
 
       setClinicMessage("Clinic set successfully ✅");
       setProfile((p: any) => ({ ...p, clinicId: selectedClinic }));
 
       // fetch doctors for new clinic if patient
       if (role === "patient") {
-        const usersRes = await fetch("/api/users", {
-          headers: { Authorization: `Bearer ${getToken()}` },
-        });
+        const usersRes = await fetch("/api/users");
         const usersData = await usersRes.json();
         setDoctors(usersData.doctors || []);
       }
@@ -158,7 +145,6 @@ export default function SettingsPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           preferredDoctorId: pendingDoctorValue || null,
@@ -195,7 +181,6 @@ export default function SettingsPage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify(passwordForm),
       });

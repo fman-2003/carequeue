@@ -3,18 +3,15 @@
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getToken } from "@/lib/auth/getSession";
+import { getSessionField } from "@/lib/auth/getSession";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getFromToken(field: string): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1]))[field] || "";
-  } catch {
-    return "";
-  }
+  return getSessionField(field);
 }
 
 const PAGE_TITLES: Record<string, string> = {

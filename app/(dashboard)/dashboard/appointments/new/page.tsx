@@ -6,18 +6,15 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import ArrowBackOutlinedIcon from "@mui/icons-material/ArrowBackOutlined";
 import Link from "next/link";
-import { getToken } from "@/lib/auth/getSession";
+import { getSessionField } from "@/lib/auth/getSession";
 import ClinicGuard from "@/components/ClinicGuard";
 import PageWrapper from "@/components/layout/PageWrapper";
 
+// Reads the cached session hint that the dashboard layout refreshes
+// from the server. UI convenience only: every API route re-derives
+// role, clinic, and identity from the signed session cookie.
 function getFromToken(field: string): string {
-  const token = getToken();
-  if (!token) return "";
-  try {
-    return JSON.parse(atob(token.split(".")[1]))[field] || "";
-  } catch {
-    return "";
-  }
+  return getSessionField(field);
 }
 
 export default function NewAppointmentPage() {
@@ -66,12 +63,8 @@ export default function NewAppointmentPage() {
     async function fetchData() {
       try {
         const [usersRes, profileRes] = await Promise.all([
-          fetch("/api/users", {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
-          fetch("/api/users/me", {
-            headers: { Authorization: `Bearer ${getToken()}` },
-          }),
+          fetch("/api/users"),
+          fetch("/api/users/me"),
         ]);
 
         const usersData = await usersRes.json();
@@ -132,7 +125,6 @@ export default function NewAppointmentPage() {
 
     fetch(
       `/api/clinics/${effectiveClinicId}/slots?doctorId=${form.doctorId}&date=${form.date}`,
-      { headers: { Authorization: `Bearer ${getToken()}` } },
     )
       .then((r) => r.json())
       .then((data) => setSlots(data.slots || []))
@@ -150,7 +142,6 @@ export default function NewAppointmentPage() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({
           ...form,

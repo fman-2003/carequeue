@@ -43,15 +43,15 @@ describe("authentication routes", () => {
       jsonRequest("http://care.test/api/auth/signup", {
         name: "Ada",
         email: "ada@test.com",
-        password: "secret1",
+        password: "secretpass1",
         role: "patient",
       }) as never,
     );
-    await expect(response.json()).resolves.toEqual({
-      token: "token",
-      user: { id: "user-1" },
-    });
+    // The token is no longer echoed in the body — it is set as an
+    // httpOnly cookie that client script cannot read.
+    await expect(response.json()).resolves.toEqual({ user: { id: "user-1" } });
     expect(response.status).toBe(201);
+    expect(response.headers.get("set-cookie")).toContain("HttpOnly");
   });
 
   it("does not call login for invalid credentials input", async () => {
@@ -70,7 +70,7 @@ describe("authentication routes", () => {
     const response = await login(
       jsonRequest("http://care.test/api/auth/login", {
         email: "ada@test.com",
-        password: "secret1",
+        password: "secretpass1",
       }) as never,
     );
     await expect(response.json()).resolves.toEqual({

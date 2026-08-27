@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import Image from "next/image";
-import { getToken, saveToken } from "@/lib/auth/getSession";
+import { fetchSession } from "@/lib/auth/getSession";
 import ConfirmModal from "@/components/ConfirmModal";
 import CameraAltOutlinedIcon from "@mui/icons-material/CameraAltOutlined";
 import PageWrapper from "@/components/layout/PageWrapper";
@@ -29,9 +29,7 @@ export default function ProfilePage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    fetch("/api/users/profile", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/users/profile")
       .then((r) => r.json())
       .then((data) => {
         if (data.user) {
@@ -66,7 +64,6 @@ export default function ProfilePage() {
 
       const res = await fetch("/api/users/profile", {
         method: "PATCH",
-        headers: { Authorization: `Bearer ${getToken()}` },
         body: formData,
       });
 
@@ -101,7 +98,6 @@ export default function ProfilePage() {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify(form),
       });
@@ -116,7 +112,8 @@ export default function ProfilePage() {
         return;
       }
 
-      if (data.token) saveToken(data.token);
+      // An email change re-issues the session cookie server-side.
+      await fetchSession();
       setProfile(data.user);
       setMessage("Profile updated successfully ✅");
     } catch {

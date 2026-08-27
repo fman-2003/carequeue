@@ -8,6 +8,10 @@ export interface IMedicalDocument extends Document {
   fileName: string;
   fileType: "lab_result" | "scan" | "referral" | "prescription" | "other";
   fileUrl: string;
+  /** Cloudinary public id — the stable handle used to sign and delete. */
+  publicId?: string;
+  resourceType?: "image" | "raw";
+  deliveryType?: "authenticated" | "upload";
   fileSize: number;
   mimeType: string;
   description?: string;
@@ -27,6 +31,14 @@ const MedicalDocumentSchema = new Schema<IMedicalDocument>(
       required: true,
     },
     fileUrl: { type: String, required: true },
+    /**
+     * New uploads record the public id and are delivered through a signed
+     * URL (see storage.service). `fileUrl` is retained for documents
+     * uploaded before that change, which have no public id stored.
+     */
+    publicId: { type: String },
+    resourceType: { type: String, enum: ["image", "raw"] },
+    deliveryType: { type: String, enum: ["authenticated", "upload"] },
     fileSize: { type: Number, required: true },
     mimeType: { type: String, required: true },
     description: { type: String },

@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useState } from "react";
-import { getToken } from "../../lib/auth/getSession";
 
 export default function InviteCodesSection() {
   const [codes, setCodes] = useState<any[]>([]);
@@ -9,9 +8,7 @@ export default function InviteCodesSection() {
   const [copied, setCopied] = useState("");
 
   useEffect(() => {
-    fetch("/api/clinics/invite", {
-      headers: { Authorization: `Bearer ${getToken()}` },
-    })
+    fetch("/api/clinics/invite")
       .then((r) => r.json())
       .then((data) => setCodes(data.codes || []));
   }, []);
@@ -23,7 +20,6 @@ export default function InviteCodesSection() {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${getToken()}`,
         },
         body: JSON.stringify({ role }),
       });
