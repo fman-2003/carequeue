@@ -1,7 +1,25 @@
 import type { NextConfig } from "next";
 
+// The Cloudinary account is the only remote image host, and its cloud name
+// scopes the delivery path. Falls back to the whole host if the variable is
+// missing, so a misconfigured environment fails at upload rather than here.
+const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+
 const nextConfig: NextConfig = {
   allowedDevOrigins: ["192.168.1.16"],
+
+  images: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "res.cloudinary.com",
+        port: "",
+        // Public avatar delivery only. `search` is deliberately left open:
+        // the profile page appends a ?t= cache-buster after each upload.
+        pathname: cloudName ? `/${cloudName}/image/upload/**` : "/**",
+      },
+    ],
+  },
 
   // Do not advertise the framework to anyone fingerprinting the stack.
   poweredByHeader: false,

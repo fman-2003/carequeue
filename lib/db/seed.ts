@@ -104,7 +104,7 @@ async function seed() {
 
   // ─── DOCTORS ─────────────────────────────────
   const doctors = await Promise.all(
-    Array.from({ length: 3 }).map(() =>
+    Array.from({ length: 5 }).map(() =>
       User.create({
         name: `Dr. ${faker.person.fullName()}`,
         email: faker.internet.email(),
@@ -118,7 +118,7 @@ async function seed() {
 
   // ─── PATIENTS ────────────────────────────────
   const patients = await Promise.all(
-    Array.from({ length: 10 }).map((_, i) =>
+    Array.from({ length: 20 }).map((_, i) =>
       User.create({
         name: faker.person.fullName(),
         email: faker.internet.email(),
@@ -159,7 +159,7 @@ async function seed() {
   // track position per doctor for FIFO waitlist ordering
   const doctorPositionMap: Record<string, number> = {};
 
-  for (let i = 0; i < 20; i++) {
+  for (let i = 0; i < 51; i++) {
     const patient = patients[i % patients.length];
     const doctor = doctors[i % doctors.length];
     const date = faker.date.soon({ days: 14 });

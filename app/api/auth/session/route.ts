@@ -21,13 +21,14 @@ export async function GET(req: NextRequest) {
     await connectDB();
 
     const user = await User.findById(payload.userId)
-      .select("_id name email role clinicId")
+      .select("_id name email role clinicId profilePicture")
       .lean<{
         _id: unknown;
         name: string;
         email: string;
         role: string;
         clinicId?: unknown;
+        profilePicture?: string | null;
       }>();
 
     if (!user) {
@@ -42,6 +43,9 @@ export async function GET(req: NextRequest) {
         email: user.email,
         role: user.role,
         clinicId: user.clinicId ? String(user.clinicId) : null,
+        // The app bar avatar reads this. It is a public delivery URL, not
+        // a credential.
+        profilePicture: user.profilePicture ?? null,
       },
     });
   } catch (error) {

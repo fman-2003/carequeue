@@ -1,17 +1,38 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { getSessionField } from "@/lib/auth/getSession";
+import { getSessionField, subscribeToSessionHint } from "@/lib/auth/getSession";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import MenuOutlinedIcon from "@mui/icons-material/MenuOutlined"
 
-// Reads the cached session hint that the dashboard layout refreshes
-// from the server. UI convenience only: every API route re-derives
-// role, clinic, and identity from the signed session cookie.
-function getFromToken(field: string): string {
-  return getSessionField(field);
+/**
+ * Reads the cached session hint that the dashboard layout refreshes from
+ * the server. UI convenience only: every API route re-derives role,
+ * clinic, and identity from the signed session cookie.
+ *
+ * It is read in an effect rather than during render for two reasons: the
+ * hint lives in localStorage, which does not exist on the server pass, and
+ * the value changes while this component is mounted — uploading a new
+ * profile picture has to repaint the avatar without a reload.
+ */
+function useSessionHint() {
+  const [hint, setHint] = useState({ name: "", profilePicture: "" });
+
+  useEffect(() => {
+    const read = () =>
+      setHint({
+        name: getSessionField("name"),
+        profilePicture: getSessionField("profilePicture"),
+      });
+
+    read();
+    return subscribeToSessionHint(read);
+  }, []);
+
+  return hint;
 }
 
 const PAGE_TITLES: Record<string, string> = {
@@ -35,8 +56,7 @@ interface Props {
 export default function AppBar({ onMenuClick }: Props) {
   const pathname = usePathname();
 
-  const name = getFromToken("userId") ? getFromToken("name") : "";
-  const profilePicture = getFromToken("profilePicture") || "";
+  const { name, profilePicture } = useSessionHint();
 
   const pageTitle =
     PAGE_TITLES[pathname] ||
@@ -83,6 +103,8 @@ export default function AppBar({ onMenuClick }: Props) {
             <Image
               src={profilePicture}
               alt="Profile"
+              width={36}
+              height={36}
               className="w-full h-full object-cover"
             />
           ) : (

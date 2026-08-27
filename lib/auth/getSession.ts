@@ -20,6 +20,7 @@ export interface SessionUser {
   email: string;
   role: string;
   clinicId: string | null;
+  profilePicture?: string | null;
 }
 
 /**
@@ -33,6 +34,27 @@ export interface SessionUser {
  */
 const HINT_KEY = "cq_session_hint";
 
+/**
+ * Components that render session-derived chrome (the app bar avatar) read
+ * the hint once and cannot see a later write to localStorage on their
+ * own. Every write announces itself so those components repaint — a new
+ * profile picture appears in the app bar straight away rather than on the
+ * next full page load.
+ */
+const HINT_EVENT = "cq:session-hint";
+
+export function subscribeToSessionHint(onChange: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener(HINT_EVENT, onChange);
+  // `storage` only fires in *other* tabs, which keeps a second tab of the
+  // dashboard in step after a profile edit here.
+  window.addEventListener("storage", onChange);
+  return () => {
+    window.removeEventListener(HINT_EVENT, onChange);
+    window.removeEventListener("storage", onChange);
+  };
+}
+
 export function cacheSessionHint(user: SessionUser | null): void {
   if (typeof window === "undefined") return;
   try {
@@ -40,10 +62,11 @@ export function cacheSessionHint(user: SessionUser | null): void {
       window.localStorage.setItem(
         HINT_KEY,
         JSON.stringify({
-          id: user.id,
+          userId: user.id,
           name: user.name,
           role: user.role,
           clinicId: user.clinicId,
+          profilePicture: user.profilePicture ?? null,
         }),
       );
     } else {
@@ -52,13 +75,19 @@ export function cacheSessionHint(user: SessionUser | null): void {
   } catch {
     // Private browsing or a full quota — the UI falls back to fetching.
   }
+  try {
+    window.dispatchEvent(new Event(HINT_EVENT));
+  } catch {
+    // Nothing is subscribed, or the environment has no CustomEvent.
+  }
 }
 
 function readHint(): {
-  id?: string;
+  userId?: string;
   name?: string;
   role?: string;
   clinicId?: string | null;
+  profilePicture?: string | null;
 } {
   if (typeof window === "undefined") return {};
   try {
@@ -85,7 +114,7 @@ export function getName(): string {
  * server-side; this value is only a convenience for the form.
  */
 export function getUserId(): string {
-  return readHint().id ?? "";
+  return readHint().userId ?? "";
 }
 
 /** Generic accessor for the components that read fields by name. */

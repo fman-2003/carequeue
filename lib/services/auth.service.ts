@@ -177,6 +177,9 @@ export async function loginUser(data: LoginInput) {
       email: user.email,
       role: user.role,
       clinicId: user.clinicId?.toString() ?? null,
+      // Seeds the app bar avatar on the first paint after login, before
+      // the dashboard's own session fetch resolves.
+      profilePicture: user.profilePicture ?? null,
     },
   };
 }

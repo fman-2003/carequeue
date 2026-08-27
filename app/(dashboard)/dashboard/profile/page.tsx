@@ -75,10 +75,15 @@ export default function ProfilePage() {
 
       // URL.revokeObjectURL(objectUrl);
 
-      const freshUrl = `${data.user.profilePicture}?t=${Date.now()}`;
-
+      // No cache-buster needed: Cloudinary puts a new version segment in
+      // the URL on every overwrite, so the path itself is already unique.
       setProfile(data.user);
-      setPreviewUrl(freshUrl);
+      setPreviewUrl(data.user.profilePicture || "");
+
+      // Re-reads the session from the server and re-caches the hint, which
+      // is what the app bar avatar renders from.
+      await fetchSession();
+
       setMessage("Profile picture updated ✅");
     } catch {
       setError("Upload failed");
@@ -174,6 +179,8 @@ export default function ProfilePage() {
                     <Image
                       src={previewUrl}
                       alt="Profile"
+                      width={50}
+                      height={50}
                       className="w-full h-full object-cover"
                     />
                   ) : (

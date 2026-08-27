@@ -89,6 +89,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await readJson(req);
+    console.log("Appontment details:", body)
     const parsed = createAppointmentSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
