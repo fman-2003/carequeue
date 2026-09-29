@@ -25,7 +25,7 @@ function buildCsp(nonce: string): string {
     // host allowlists. Next.js stamps the nonce onto its own bundles by
     // reading it back off the request header set below.
     // React's dev build needs eval for its error overlay; production does not.
-    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isProduction ? "" : " 'unsafe-eval'"}`,
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${isProduction ? "" : " 'unsafe-eval'"} 'wasm-unsafe-eval'`,
 
     // MUI/Emotion inject their stylesheets at runtime through the CSSOM,
     // which needs 'unsafe-inline' here. Inline *styles* cannot execute
@@ -71,7 +71,7 @@ function applyBaselineHeaders(headers: Headers) {
   // Hardware and identity APIs this app never uses.
   headers.set(
     "Permissions-Policy",
-    "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    "camera=(), microphone=(self), geolocation=(), payment=(), usb=(), interest-cohort=()",
   );
 
   // Isolates the browsing context from cross-origin popups/embeds.

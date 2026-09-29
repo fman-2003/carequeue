@@ -36,13 +36,13 @@ const ClinicSchema = new Schema<IClinic>(
     openingTime: { type: String, required: true, default: "08:00" },
     closingTime: { type: String, required: true, default: "17:00" },
     slotDurationMinutes: { type: Number, required: true, default: 30 },
-    workingDays: { type: [Number], default: [1, 2, 3, 4, 5] },
+    workingDays: { type: [Number], required: true, default: [1, 2, 3, 4, 5] },
     adminId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     isActive: { type: Boolean, default: true },
     inviteCodes: {
       type: [
         {
-          code: { type: String, required: true, unique: true },
+          code: { type: String, required: true },
           role: {
             type: String,
             enum: ["doctor", "receptionist"],

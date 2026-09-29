@@ -16,7 +16,7 @@ import HealingOutlinedIcon from "@mui/icons-material/HealingOutlined";
 import ListAltOutlinedIcon from "@mui/icons-material/ListAltOutlined";
 import MedicalInformationOutlinedIcon from "@mui/icons-material/MedicalInformationOutlined";
 import FolderOpenOutlinedIcon from "@mui/icons-material/FolderOpenOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+// import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import LocalHospitalOutlinedIcon from "@mui/icons-material/LocalHospitalOutlined";
 import PersonOutlinedIcon from "@mui/icons-material/PersonOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
@@ -114,11 +114,11 @@ const NAV_LINKS: Record<string, NavLink[]> = {
       label: "My Records",
       Icon: FolderOpenOutlinedIcon,
     },
-    {
-      href: "/dashboard/settings",
-      label: "Settings",
-      Icon: SettingsOutlinedIcon,
-    },
+    // {
+    //   href: "/dashboard/settings",
+    //   label: "Settings",
+    //   Icon: SettingsOutlinedIcon,
+    // },
   ],
 };
 
@@ -253,7 +253,7 @@ export default function DashboardLayout({
           {children}
         </main>
       </div>
-      <AISchedulingPanel />
+      {role !== "admin" && <AISchedulingPanel />}
     </div>
   );
 }

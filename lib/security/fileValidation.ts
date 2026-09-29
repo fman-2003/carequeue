@@ -19,7 +19,11 @@ export interface FileKind {
 const IMAGE_KINDS: Record<string, FileKind> = {
   "image/jpeg": { mime: "image/jpeg", extension: "jpg", resourceType: "image" },
   "image/png": { mime: "image/png", extension: "png", resourceType: "image" },
-  "image/webp": { mime: "image/webp", extension: "webp", resourceType: "image" },
+  "image/webp": {
+    mime: "image/webp",
+    extension: "webp",
+    resourceType: "image",
+  },
 };
 
 const DOCUMENT_KINDS: Record<string, FileKind> = {
@@ -31,8 +35,8 @@ const DOCUMENT_KINDS: Record<string, FileKind> = {
   },
 };
 
-export const AVATAR_MAX_BYTES = 5 * 1024 * 1024; // 5MB
-export const DOCUMENT_MAX_BYTES = 15 * 1024 * 1024; // 15MB
+export const AVATAR_MAX_BYTES = 5 * 1024 * 1024;
+export const DOCUMENT_MAX_BYTES = 15 * 1024 * 1024;
 
 /** Reads the leading bytes and reports what the file actually is. */
 function sniff(buffer: Buffer): string | null {
@@ -151,10 +155,7 @@ async function validate(
 
   // A PNG announced as a PDF is not a mistake worth accommodating.
   if (actual !== file.type) {
-    throw new AppError(
-      "File content does not match its declared type",
-      415,
-    );
+    throw new AppError("File content does not match its declared type", 415);
   }
 
   return {

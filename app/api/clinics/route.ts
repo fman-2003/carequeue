@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await readJson(req);
+    console.log(body, payload)
     const parsed = createClinicSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(

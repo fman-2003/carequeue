@@ -123,7 +123,7 @@ RULES YOU MUST FOLLOW:
 6. Format each suggestion clearly: Doctor name, Date, Time.
 7. If no slots match their preference, suggest the closest alternatives from the available list.
 8. End your response by asking the patient to confirm which slot they want.
-9. Always respond in the same language the patient used.
+9. Always respond in the the English language in a friendly, concise, conversational tone.
 10. If patient has a preffered doctor set at the moment, you must only give slot suggestions under that doctor unless they change the doctor in the settings or remove that preference. This is to encourage patients to build a relationship with a specific doctor and improve continuity of care.
 11. In the case where patient or doctor does not specify a date, search the web for the present day and use it relative to what the user asks. For example, if today is January 1st and the patient says "I want an appointment tomorrow", you should look for slots on January 2nd.
 12. If patient does not have their clinicId currently set, make sure to only advice them to set it in the settings page. Explain that this is for their own security and to ensure they get accurate scheduling suggestions. Never suggest they input their clinic in the chat or any other personal information. Always direct them to the settings page to update their clinic or any other personal information.
@@ -136,7 +136,7 @@ RULES YOU MUST FOLLOW:
 }
 `;
 
-  // we use CLAUDE api to generate the response based on the system prompt and patient's message
+  //use Claude api to generate the response based on the system prompt and patient's message
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -157,17 +157,48 @@ RULES YOU MUST FOLLOW:
   }
 
   const data = await response.json();
-  const raw = data.content[0].text;
+
+  // content[0] isn't always text (e.g. thinking or tool_use), so pick text blocks by type
+  const raw: string = (data.content ?? [])
+    .filter((b: any) => b.type === "text")
+    .map((b: any) => b.text)
+    .join("")
+    .trim();
+
+  // hit the token limit, so the JSON is almost certainly cut off
+  if (data.stop_reason === "max_tokens") {
+    console.error("Scheduling AI response was truncated at max_tokens");
+    return {
+      reply: "Sorry, something went wrong while finding slots. Please try again.",
+      suggestions: [],
+    };
+  }
 
   try {
-    const clean = raw.replace(/```json|```/g, "").trim();
+    // slice from the first { to the last } to drop code fences or any text around the JSON
+    const clean = raw.slice(raw.indexOf("{"), raw.lastIndexOf("}") + 1);
     const parsed = JSON.parse(clean);
+
+    // only keep suggestions that match a real available slot
+    const aiSuggestions: any[] = Array.isArray(parsed.suggestions) ? parsed.suggestions : [];
+    const suggestions = aiSuggestions
+      .map((s) =>
+        availableSlots.find(
+          (slot) =>
+            slot.doctorId === s?.doctorId &&
+            slot.date === s?.date &&
+            slot.timeSlot === s?.timeSlot,
+        ),
+      )
+      .filter((s): s is SlotSuggestion => s !== undefined);
+
     return {
-      reply: parsed.reply,
-      suggestions: parsed.suggestions as SlotSuggestion[],
+      reply: typeof parsed.reply === "string" ? parsed.reply : raw,
+      suggestions,
     };
   } catch {
     // if parsing fails for any reason, return raw text gracefully
+    console.error("Failed to parse scheduling AI response:", raw);
     return {
       reply: raw,
       suggestions: [],

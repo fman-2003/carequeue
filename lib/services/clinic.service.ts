@@ -11,6 +11,7 @@ export async function createClinic(data: CreateClinicInput, adminId: string) {
   await connectDB();
   
   try {
+    
     const existing = await Clinic.findOne({ email: data.email });
     if (existing) throw new Error("A clinic with this email already exists");
 

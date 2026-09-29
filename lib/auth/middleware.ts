@@ -37,8 +37,6 @@ export function authenticate(req: NextRequest): AuthResult {
   try {
     return { payload: verifyToken(token), error: null };
   } catch {
-    // The reason (expired vs. tampered vs. wrong issuer) is deliberately
-    // not echoed back — it only helps someone probing the token format.
     return { payload: null, error: unauthorized("Invalid or expired session") };
   }
 }

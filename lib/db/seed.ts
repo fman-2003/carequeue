@@ -159,7 +159,7 @@ async function seed() {
   // track position per doctor for FIFO waitlist ordering
   const doctorPositionMap: Record<string, number> = {};
 
-  for (let i = 0; i < 51; i++) {
+  for (let i = 0; i < 3000; i++) {
     const patient = patients[i % patients.length];
     const doctor = doctors[i % doctors.length];
     const date = faker.date.soon({ days: 14 });

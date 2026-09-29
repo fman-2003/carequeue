@@ -13,7 +13,8 @@ import { handleServiceError, readJson } from "@/lib/security/errors";
 
 const inviteSchema = z.object({
   role: z.enum(["doctor", "receptionist"], {
-    message: "Only doctor or receptionist codes can be generated.",
+    message:
+      "Invite codes codes can only be generated for doctors or receptionists.",
   }),
 });
 

@@ -128,7 +128,7 @@ export const RATE_LIMITS = {
   /** File uploads — bandwidth and storage cost. */
   upload: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** LLM-backed endpoint — direct spend per request. */
-  ai: { limit: 15, windowMs: 60 * 60 * 1000 },
+  aiText: { limit: 15, windowMs: 60 * 60 * 1000 },
   /** Invite code generation. */
   invite: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** General write traffic. */

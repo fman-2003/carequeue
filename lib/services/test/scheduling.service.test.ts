@@ -47,10 +47,24 @@ describe("smartSchedule", () => {
     mocks.user.find.mockReturnValue({ select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([{ _id: "doctor-1", name: "Dr B" }]) }) });
     mocks.clinic.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ workingDays: [0, 1, 2, 3, 4, 5, 6], openingTime: "08:00", closingTime: "09:00", slotDurationMinutes: 30 }) });
     mocks.getAvailableSlots.mockResolvedValue([{ timeSlot: "08:00 - 08:30", available: true }]);
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ content: [{ text: '```json {"reply":"Here is a slot","suggestions":[{"doctorId":"doctor-1","doctorName":"Dr B","date":"2026-08-20","timeSlot":"08:00 - 08:30"}]} ```' }] }) });
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    const date = tomorrow.toISOString().split("T")[0];
+    const text = `Sure! Here you go: {"reply":"Here is a slot","suggestions":[{"doctorId":"doctor-1","doctorName":"Dr B","date":"${date}","timeSlot":"08:00 - 08:30"},{"doctorId":"doctor-9","doctorName":"Dr Fake","date":"${date}","timeSlot":"08:00 - 08:30"}]}`;
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ stop_reason: "end_turn", content: [{ type: "text", text }] }) });
     vi.stubGlobal("fetch", fetchMock);
 
-    await expect(smartSchedule(request)).resolves.toMatchObject({ reply: "Here is a slot", suggestions: [{ doctorId: "doctor-1" }] });
+    // the invented doctor-9 slot is dropped because it isn't in the available list
+    await expect(smartSchedule(request)).resolves.toEqual({ reply: "Here is a slot", suggestions: [{ doctorId: "doctor-1", doctorName: "Dr B", date, timeSlot: "08:00 - 08:30" }] });
     expect(fetchMock).toHaveBeenCalledWith("https://api.anthropic.com/v1/messages", expect.objectContaining({ method: "POST" }));
+  });
+
+  it("returns a friendly message when the AI response is cut off at max_tokens", async () => {
+    mocks.user.find.mockReturnValue({ select: vi.fn().mockReturnValue({ lean: vi.fn().mockResolvedValue([{ _id: "doctor-1", name: "Dr B" }]) }) });
+    mocks.clinic.findById.mockReturnValue({ lean: vi.fn().mockResolvedValue({ workingDays: [0, 1, 2, 3, 4, 5, 6], openingTime: "08:00", closingTime: "09:00", slotDurationMinutes: 30 }) });
+    mocks.getAvailableSlots.mockResolvedValue([{ timeSlot: "08:00 - 08:30", available: true }]);
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: vi.fn().mockResolvedValue({ stop_reason: "max_tokens", content: [{ type: "text", text: '{"reply":"Here is' }] }) }));
+
+    await expect(smartSchedule(request)).resolves.toMatchObject({ suggestions: [] });
   });
 });
