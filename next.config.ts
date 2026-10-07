@@ -11,7 +11,7 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: "https",
+        protocol:  "https",
         hostname: "res.cloudinary.com",
         port: "",
         // Public avatar delivery only. `search` is deliberately left open:

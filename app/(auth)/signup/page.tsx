@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useState, useEffect } from "react";
@@ -57,6 +58,7 @@ export default function SignupPage() {
           password: form.password,
           phone: form.phone || undefined,
           role: form.role,
+          inviteCode: form.inviteCode,
         }),
       });
 
@@ -250,4 +252,4 @@ export default function SignupPage() {
     </main>
     // )
   );
-}
+};

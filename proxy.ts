@@ -35,8 +35,8 @@ function buildCsp(nonce: string): string {
     // Patient documents and avatars are served from Cloudinary.
     "img-src 'self' data: blob: https://res.cloudinary.com",
     "font-src 'self' data:",
-    "connect-src 'self' https://api.cloudinary.com",
-    "media-src 'self' https://res.cloudinary.com",
+    "connect-src 'self' https://api.cloudinary.com https://huggingface.co https://*.huggingface.co https://*.hf.co https://cdn.jsdelivr.net",
+    "media-src 'self' blob: https://res.cloudinary.com",
 
     // Patient documents (PDFs) open in their own tab, never framed in.
     "object-src 'none'",

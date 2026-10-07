@@ -25,7 +25,7 @@ export async function POST(req: NextRequest) {
   const limited = enforceRateLimit(
     req,
     "scheduling",
-    RATE_LIMITS.ai,
+    RATE_LIMITS.aiText,
     payload.userId,
   );
   if (limited) return limited;
