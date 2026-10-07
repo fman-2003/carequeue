@@ -129,6 +129,8 @@ export const RATE_LIMITS = {
   upload: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** LLM-backed endpoint — direct spend per request. */
   aiText: { limit: 15, windowMs: 60 * 60 * 1000 },
+  /** Speech-to-text — each call is a request to Groq. */
+  voice: { limit: 30, windowMs: 60 * 60 * 1000 },
   /** Invite code generation. */
   invite: { limit: 20, windowMs: 60 * 60 * 1000 },
   /** General write traffic. */

@@ -183,3 +183,115 @@ export function validateMedicalDocument(file: unknown) {
     label: "Document",
   });
 }
+
+/**
+ * Voice clips.
+ *
+ * Browsers record in different formats: Chrome and Edge use WebM, Firefox
+ * uses OGG, Safari uses MP4. Declared types can also carry codec text, like
+ * "audio/webm;codecs=opus", so the part after ";" is dropped before comparing.
+ * As with images, the bytes decide, not the browser's label.
+ */
+export interface AudioKind {
+  mime: string;
+  /** File extension sent to the speech service, which uses it to read the format. */
+  extension: string;
+}
+
+const AUDIO_KINDS: Record<string, AudioKind> = {
+  "audio/webm": { mime: "audio/webm", extension: "webm" },
+  "audio/ogg": { mime: "audio/ogg", extension: "ogg" },
+  "audio/mp4": { mime: "audio/mp4", extension: "m4a" },
+  "audio/wav": { mime: "audio/wav", extension: "wav" },
+};
+
+/** Other names browsers use for the same format. */
+const AUDIO_ALIASES: Record<string, string> = {
+  "audio/x-wav": "audio/wav",
+  "audio/wave": "audio/wav",
+};
+
+export const VOICE_MAX_BYTES = 2 * 1024 * 1024;
+
+function sniffAudio(buffer: Buffer): string | null {
+  if (buffer.length < 12) return null;
+
+  // WebM / Matroska: 1A 45 DF A3
+  if (
+    buffer[0] === 0x1a &&
+    buffer[1] === 0x45 &&
+    buffer[2] === 0xdf &&
+    buffer[3] === 0xa3
+  ) {
+    return "audio/webm";
+  }
+
+  // OGG: "OggS"
+  if (buffer.subarray(0, 4).toString("ascii") === "OggS") return "audio/ogg";
+
+  // MP4: "ftyp" at byte 4
+  if (buffer.subarray(4, 8).toString("ascii") === "ftyp") return "audio/mp4";
+
+  // WAV: "RIFF" <4 byte size> "WAVE"
+  if (
+    buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buffer.subarray(8, 12).toString("ascii") === "WAVE"
+  ) {
+    return "audio/wav";
+  }
+
+  return null;
+}
+
+export interface ValidatedVoiceClip {
+  buffer: Buffer;
+  kind: AudioKind;
+  size: number;
+}
+
+export async function validateVoiceClip(
+  file: unknown,
+): Promise<ValidatedVoiceClip> {
+  if (!(file instanceof File) || file.size === 0) {
+    throw new AppError("No voice clip provided", 400);
+  }
+
+  const limitMb = Math.floor(VOICE_MAX_BYTES / (1024 * 1024));
+
+  // Checked before the body is buffered.
+  if (file.size > VOICE_MAX_BYTES) {
+    throw new AppError(`Voice clip must be under ${limitMb}MB`, 413);
+  }
+
+  const base = file.type.split(";")[0].trim().toLowerCase();
+  const declared = AUDIO_ALIASES[base] ?? base;
+
+  if (!AUDIO_KINDS[declared]) {
+    throw new AppError(
+      `Unsupported audio type. Allowed: ${Object.keys(AUDIO_KINDS).join(", ")}`,
+      415,
+    );
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  // file.size is also client-reported, so check again after reading.
+  if (buffer.length > VOICE_MAX_BYTES) {
+    throw new AppError(`Voice clip must be under ${limitMb}MB`, 413);
+  }
+
+  const actual = sniffAudio(buffer);
+
+  if (!actual) {
+    throw new AppError(
+      "File content does not match a supported audio type",
+      415,
+    );
+  }
+
+  if (actual !== declared) {
+    throw new AppError("File content does not match its declared type", 415);
+  }
+
+  return { buffer, kind: AUDIO_KINDS[actual], size: buffer.length };
+}
