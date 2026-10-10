@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { getClinicId, getUserId } from "@/lib/auth/getSession";
 import { motion } from "framer-motion";
+import VoiceControls from "@/components/voice/VoiceControls";
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -14,6 +15,9 @@ interface Suggestion {
   date: string;
   timeSlot: string;
 }
+
+// Fixed into the build. The voice button is hidden unless this is "true".
+const VOICE_ENABLED = process.env.NEXT_PUBLIC_VOICE_ENABLED === "true";
 
 export default function AISchedulingPanel() {
   const [open, setOpen] = useState(false);
@@ -342,6 +346,20 @@ export default function AISchedulingPanel() {
               </svg>
             </button>
           </div>
+          {VOICE_ENABLED && (
+            <VoiceControls
+              active={open}
+              disabled={loading}
+              onTranscript={(text) =>
+                setInput((prev) =>
+                  prev.trim() ? `${prev.trim()} ${text}` : text,
+                )
+              }
+            />
+          )}
+          <p className="text-xs text-gray-400 mt-2">
+            Press Enter to send · Shift+Enter for new line
+          </p>
           <p className="text-xs text-gray-400 mt-2">
             Press Enter to send · Shift+Enter for new line
           </p>
