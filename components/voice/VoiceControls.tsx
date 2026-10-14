@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
+import VolumeUpOutlinedIcon from "@mui/icons-material/VolumeUpOutlined";
+import VolumeOffOutlinedIcon from "@mui/icons-material/VolumeOffOutlined";
 import { useVoiceRecorder } from "@/lib/hooks/useVoiceRecorder";
 
 interface Props {
@@ -9,12 +11,23 @@ interface Props {
   /** Stops a new recording from starting while a chat request is running. */
   disabled?: boolean;
   onTranscript: (text: string) => void;
+  /** Called when the mic is tapped to start. Used to silence the assistant first. */
+  onBeforeRecord?: () => void;
+  speakerSupported?: boolean;
+  speakerOn?: boolean;
+  speaking?: boolean;
+  onToggleSpeaker?: () => void;
 }
 
 export default function VoiceControls({
   active,
   disabled = false,
   onTranscript,
+  onBeforeRecord,
+  speakerSupported = false,
+  speakerOn = false,
+  speaking = false,
+  onToggleSpeaker,
 }: Props) {
   const { status, error, start, stop, cancel } = useVoiceRecorder({
     onTranscript,
@@ -30,15 +43,21 @@ export default function VoiceControls({
   const showError = Boolean(error) && status === "idle";
 
   function handleClick() {
-    if (recording) stop();
-    else if (status === "idle") void start();
+    if (recording) {
+      stop();
+    } else if (status === "idle") {
+      onBeforeRecord?.();
+      void start();
+    }
   }
 
   const hint = recording
     ? "Listening… tap the button again to stop"
     : transcribing
       ? "Writing down what you said…"
-      : "Tap the mic and speak (up to 30 seconds)";
+      : speaking
+        ? "Speaking… tap the speaker to mute"
+        : "Tap the mic and speak (up to 30 seconds)";
 
   return (
     <div className="flex items-center gap-3 mt-3">
@@ -75,6 +94,30 @@ export default function VoiceControls({
           </svg>
         )}
       </button>
+
+      {speakerSupported && onToggleSpeaker && (
+        <button
+          type="button"
+          onClick={onToggleSpeaker}
+          aria-label={
+            speakerOn ? "Turn voice replies off" : "Turn voice replies on"
+          }
+          aria-pressed={speakerOn}
+          title={speakerOn ? "Voice replies on" : "Voice replies off"}
+          className={`shrink-0 w-10 h-10 rounded-full border flex items-center justify-center transition ${
+            speakerOn
+              ? "bg-blue-50 border-blue-300 text-blue-600"
+              : "border-gray-300 text-gray-500 hover:bg-gray-50"
+          }`}
+        >
+          {speakerOn ? (
+            <VolumeUpOutlinedIcon sx={{ fontSize: 20 }} />
+          ) : (
+            <VolumeOffOutlinedIcon sx={{ fontSize: 20 }} />
+          )}
+        </button>
+      )}
+
       <p
         className={`text-xs ${showError ? "text-red-500" : "text-gray-500"}`}
         aria-live="polite"

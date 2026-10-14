@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { getClinicId, getUserId } from "@/lib/auth/getSession";
 import { motion } from "framer-motion";
 import VoiceControls from "@/components/voice/VoiceControls";
+import { useTextToSpeech } from "@/lib/hooks/useTextToSpeech";
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -30,6 +31,21 @@ export default function AISchedulingPanel() {
 
   const bottomRef = useRef<HTMLDivElement>(null);
 
+  const {
+    supported: speakerSupported,
+    enabled: speakerOn,
+    speaking,
+    toggle: toggleSpeaker,
+    speak,
+    cancel: stopSpeaking,
+    unlock: unlockSpeech,
+  } = useTextToSpeech();
+
+  // The assistant must go quiet when the panel is closed.
+  useEffect(() => {
+    if (!open) stopSpeaking();
+  }, [open, stopSpeaking]);
+
   useEffect(() => {
     // From the cached session hint. The scheduling API checks this
     // against the caller’s own clinic and rejects a mismatch.
@@ -54,11 +70,15 @@ export default function AISchedulingPanel() {
     }
   }, [open, messages.length]);
 
-  async function handleSend() {
-    if (!input.trim() || loading) return;
+  async function sendMessage(text: string) {
+    const userMessage = text.trim();
+    if (!userMessage || loading) return;
 
-    const userMessage = input.trim();
-    setInput("");
+    if (VOICE_ENABLED) {
+      stopSpeaking(); // a new question silences the old answer
+      unlockSpeech(); // lets later replies speak on iPhone/Safari
+    }
+
     setSuggestions([]);
 
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
@@ -108,6 +128,7 @@ export default function AISchedulingPanel() {
           content: data.reply,
         },
       ]);
+      if (VOICE_ENABLED) speak(data.reply);
 
       if (data.suggestions?.length > 0) {
         setSuggestions(data.suggestions);
@@ -125,7 +146,17 @@ export default function AISchedulingPanel() {
     }
   }
 
+  // Used by the Send button and the Enter key. Voice can call sendMessage directly later.
+  function handleSend() {
+    const text = input.trim();
+    if (!text || loading) return;
+
+    setInput("");
+    void sendMessage(text);
+  }
+
   async function handleBookSuggestion(suggestion: Suggestion) {
+    if (VOICE_ENABLED) stopSpeaking();
     setBooking(suggestion.timeSlot);
     setSuggestions([]);
 
@@ -160,13 +191,13 @@ export default function AISchedulingPanel() {
         return;
       }
 
+      const confirmation = `✅ Done! Your appointment with ${suggestion.doctorName} on ${new Date(suggestion.date).toDateString()} at ${suggestion.timeSlot} has been booked. You'll receive a WhatsApp confirmation shortly.`;
+
       setMessages((prev) => [
         ...prev,
-        {
-          role: "assistant",
-          content: `✅ Done! Your appointment with ${suggestion.doctorName} on ${new Date(suggestion.date).toDateString()} at ${suggestion.timeSlot} has been booked. You'll receive a WhatsApp confirmation shortly.`,
-        },
+        { role: "assistant", content: confirmation },
       ]);
+      if (VOICE_ENABLED) speak(confirmation);
     } catch {
       setMessages((prev) => [
         ...prev,
@@ -189,6 +220,7 @@ export default function AISchedulingPanel() {
   }
 
   function clearChat() {
+    stopSpeaking();
     setMessages([]);
     setSuggestions([]);
     setInput("");
@@ -355,11 +387,13 @@ export default function AISchedulingPanel() {
                   prev.trim() ? `${prev.trim()} ${text}` : text,
                 )
               }
+              onBeforeRecord={stopSpeaking}
+              speakerSupported={speakerSupported}
+              speakerOn={speakerOn}
+              speaking={speaking}
+              onToggleSpeaker={toggleSpeaker}
             />
           )}
-          <p className="text-xs text-gray-400 mt-2">
-            Press Enter to send · Shift+Enter for new line
-          </p>
           <p className="text-xs text-gray-400 mt-2">
             Press Enter to send · Shift+Enter for new line
           </p>
