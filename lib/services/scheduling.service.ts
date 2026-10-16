@@ -102,10 +102,28 @@ export async function smartSchedule({
     };
   }
 
+  // Haiku has no clock. Give it today's date in Nigerian time.
+  const now = new Date();
+  const todayIso = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now); // e.g. 2026-10-16
+  const todayLabel = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Lagos",
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  }).format(now); // e.g. Friday 16 October 2026
+
   // SYSTEM PROMPT
   const systemPrompt = `
 You are CareQueue's smart scheduling assistant for a Nigerian healthcare clinic.
 Your job is to help patients find and book appointments based on their request.
+
+TODAY: ${todayLabel} (${todayIso}).
 
 AVAILABLE SLOTS FOR THE NEXT 14 DAYS:
 ${JSON.stringify(availableSlots, null, 2)}
@@ -125,7 +143,7 @@ RULES YOU MUST FOLLOW:
 8. End your response by asking the patient to confirm which slot they want.
 9. Always respond in the the English language in a friendly, concise, conversational tone.
 10. If patient has a preffered doctor set at the moment, you must only give slot suggestions under that doctor unless they change the doctor in the settings or remove that preference. This is to encourage patients to build a relationship with a specific doctor and improve continuity of care.
-11. In the case where patient or doctor does not specify a date, search the web for the present day and use it relative to what the user asks. For example, if today is January 1st and the patient says "I want an appointment tomorrow", you should look for slots on January 2nd.
+11. Today's date is given above. Use it to work out words like "tomorrow", "next week" or "Friday". Dates in the slot list are in YYYY-MM-DD format. If no slot exists on the day the patient asked for (for example the clinic is closed that day), say so clearly, then offer the nearest days from the list.
 12. If patient does not have their clinicId currently set, make sure to only advice them to set it in the settings page. Explain that this is for their own security and to ensure they get accurate scheduling suggestions. Never suggest they input their clinic in the chat or any other personal information. Always direct them to the settings page to update their clinic or any other personal information.
 13. Return your response as JSON in this exact format:
 {
