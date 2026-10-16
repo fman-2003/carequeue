@@ -5,6 +5,8 @@ import { getClinicId, getUserId } from "@/lib/auth/getSession";
 import { motion } from "framer-motion";
 import VoiceControls from "@/components/voice/VoiceControls";
 import { useTextToSpeech } from "@/lib/hooks/useTextToSpeech";
+import { logVoiceTiming } from "@/lib/utils/voiceMetrics";
+
 interface Message {
   role: "user" | "assistant";
   content: string;
@@ -30,6 +32,8 @@ export default function AISchedulingPanel() {
   const [booking, setBooking] = useState<string | null>(null);
 
   const bottomRef = useRef<HTMLDivElement>(null);
+  // The text voice put in the box, so we can tell if the tester changed it.
+  const expectedTranscriptRef = useRef<string | null>(null);
 
   const {
     supported: speakerSupported,
@@ -79,6 +83,17 @@ export default function AISchedulingPanel() {
       unlockSpeech(); // lets later replies speak on iPhone/Safari
     }
 
+    // Was this text spoken? If so, did the tester change it before sending?
+    const transcript = expectedTranscriptRef.current;
+    expectedTranscriptRef.current = null;
+    const fromVoice = transcript !== null;
+    if (fromVoice) {
+      logVoiceTiming("transcript-check", null, {
+        edited: userMessage !== transcript,
+      });
+    }
+    const startedAt = performance.now();
+
     setSuggestions([]);
 
     setMessages((prev) => [...prev, { role: "user", content: userMessage }]);
@@ -107,6 +122,14 @@ export default function AISchedulingPanel() {
           message: userMessage,
         }),
       });
+
+      if (VOICE_ENABLED) {
+        logVoiceTiming("chat", performance.now() - startedAt, {
+          ok: res.ok,
+          status: res.status,
+          fromVoice,
+        });
+      }
 
       const data = await res.json();
 
@@ -382,11 +405,11 @@ export default function AISchedulingPanel() {
             <VoiceControls
               active={open}
               disabled={loading}
-              onTranscript={(text) =>
-                setInput((prev) =>
-                  prev.trim() ? `${prev.trim()} ${text}` : text,
-                )
-              }
+              onTranscript={(text) => {
+                const next = input.trim() ? `${input.trim()} ${text}` : text;
+                expectedTranscriptRef.current = next.trim();
+                setInput(next);
+              }}
               onBeforeRecord={stopSpeaking}
               speakerSupported={speakerSupported}
               speakerOn={speakerOn}

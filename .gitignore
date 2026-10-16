@@ -60,3 +60,6 @@ debug.log
 
 # Claude
 /.claude
+
+# Audio test files
+tests/fixtures/voice/*.wav

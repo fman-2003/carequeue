@@ -3,6 +3,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { makeSpeakable, splitForSpeech } from "@/lib/utils/speakable";
+import { logVoiceTiming } from "@/lib/utils/voiceMetrics";
 
 /** Remembers the speaker button. A convenience only. */
 const STORAGE_KEY = "cq_voice_replies";
@@ -109,10 +110,20 @@ export function useTextToSpeech() {
     }
 
     const voice = pickVoice(synth.getVoices());
+    const startedAt = performance.now();
     const utterances = chunks.map((chunk, index) => {
       const utterance = new SpeechSynthesisUtterance(chunk);
       if (voice) utterance.voice = voice;
       utterance.lang = voice ? voice.lang : "en";
+      if (index === 0) {
+        utterance.onstart = () => {
+          if (runIdRef.current !== runId) return;
+          logVoiceTiming("tts-start", performance.now() - startedAt, {
+            chunks: chunks.length,
+            voice: voice ? voice.name : "default",
+          });
+        };
+      }
 
       const finished = () => {
         if (runIdRef.current !== runId || !mountedRef.current) return;

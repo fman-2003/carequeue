@@ -2,6 +2,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { logVoiceTiming } from "@/lib/utils/voiceMetrics";
 
 export type VoiceStatus = "idle" | "recording" | "transcribing";
 
@@ -106,11 +107,12 @@ export function useVoiceRecorder({ onTranscript }: Options) {
   }, []);
 
   const transcribe = useCallback(
-    async (blob: Blob) => {
+    async (blob: Blob, recordedMs: number) => {
       const runId = ++runIdRef.current;
       const controller = new AbortController();
       abortRef.current = controller;
       update("transcribing");
+      const startedAt = performance.now();
 
       try {
         const form = new FormData();
@@ -125,6 +127,15 @@ export function useVoiceRecorder({ onTranscript }: Options) {
 
         // Cancelled or replaced while we were waiting.
         if (runIdRef.current !== runId) return;
+
+        logVoiceTiming("stt", performance.now() - startedAt, {
+          ok: res.ok,
+          status: res.status,
+          bytes: blob.size,
+          recordedMs,
+          heardSpeech:
+            typeof data.text === "string" && data.text.trim().length > 0,
+        });
 
         if (!res.ok) {
           fail(
@@ -251,7 +262,7 @@ export function useVoiceRecorder({ onTranscript }: Options) {
         return;
       }
 
-      void transcribe(blob);
+      void transcribe(blob, duration);
     };
 
     recorderRef.current = recorder;

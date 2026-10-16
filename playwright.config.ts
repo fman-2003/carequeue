@@ -11,6 +11,12 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
+
+// The sound the fake microphone plays in tests/e2e/voice.spec.ts.
+const VOICE_CLIP =
+  process.env.E2E_VOICE_CLIP ??
+  path.resolve(__dirname, "tests/fixtures/voice/clip-01.wav");
+
 export default defineConfig({
   testDir: "./tests",
   /* Run tests in files in parallel */
@@ -34,6 +40,22 @@ export default defineConfig({
 
   /* Configure projects for major browsers */
   projects: [
+    {
+      name: "voice-chromium",
+      testMatch: /voice\.spec\.ts/,
+      use: {
+        ...devices["Desktop Chrome"],
+        permissions: ["microphone"],
+        launchOptions: {
+          args: [
+            "--use-fake-device-for-media-stream",
+            "--use-fake-ui-for-media-stream",
+            // "%noloop" plays the clip once instead of repeating it.
+            `--use-file-for-fake-audio-capture=${VOICE_CLIP}%noloop`,
+          ],
+        },
+      },
+    },
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },

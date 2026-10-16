@@ -1,0 +1,72 @@
+[
+  {
+    "file": "clip-01.wav",
+    "expected": "Any slot with Dr. Adebayo Tosin this Friday?",
+    "terms": ["Adebayo", "Tosin", "Friday"]
+  },
+  {
+    "file": "clip-02.wav",
+    "expected": "I need a morning appointment next week.",
+    "terms": ["morning", "next week"]
+  },
+  {
+    "file": "clip-03.wav",
+    "expected": "Book me for tomorrow afternoon.",
+    "terms": ["tomorrow", "afternoon"]
+  },
+  {
+    "file": "clip-04.wav",
+    "expected": "I want to see Dr. Jerald McKenzie on Monday at ten.",
+    "terms": ["Jerald", "McKenzie", "Monday", "ten"]
+  },
+  {
+    "file": "clip-05.wav",
+    "expected": "Is there anything after 2 o'clock?",
+    "terms": ["2 o'clock"]
+  },
+  {
+    "file": "clip-06.wav",
+    "expected": "Any slot on the fifteenth?",
+    "terms": ["fifteenth"]
+  },
+  {
+    "file": "clip-07.wav",
+    "expected": "Please find the earliest slot you have.",
+    "terms": ["earliest"]
+  },
+  {
+    "file": "clip-08.wav",
+    "expected": "Can I see a doctor on Wednesday morning?",
+    "terms": ["Wednesday", "morning"]
+  },
+  {
+    "file": "clip-09.wav",
+    "expected": "I want eight thirty.",
+    "terms": ["eight thirty"]
+  },
+  {
+    "file": "clip-10.wav",
+    "expected": "Show me Thursday slot with Dr. Adebayo.",
+    "terms": ["Thursday", "Adebayo"]
+  },
+  {
+    "file": "clip-11.wav",
+    "expected": "Any slot on the fifteenth?",
+    "terms": ["fifteenth"]
+  },
+  {
+    "file": "clip-12.wav",
+    "expected": "Please find the earliest slot you have.",
+    "terms": ["earliest"]
+  },
+  {
+    "file": "clip-13.wav",
+    "expected": "Can I see a doctor on Wednesday morning?",
+    "terms": ["Wednesday", "morning"]
+  },
+  {
+    "file": "clip-14.wav",
+    "expected": "I want eight thirty.",
+    "terms": ["eight thirty"]
+  }
+]
